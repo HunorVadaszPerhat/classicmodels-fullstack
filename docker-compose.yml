@@ -77,7 +77,7 @@ services:
       # Override the JDBC URL: in dev it points at localhost:3307, but
       # inside the compose network we reach MySQL via the "db" service
       # name on its native 3306 port.
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/classicmodels?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://classicmodels-fullstack-db:3306/classicmodels?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: appuser
       SPRING_DATASOURCE_PASSWORD: apppass
 
@@ -100,6 +100,9 @@ services:
       # change — in compose mode the browser hits http://localhost/
       # rather than http://localhost:4200/, so register
       # http://localhost/api/v1/login/oauth2/code/google.
+
+      # Store uploads in a directory the non-root container user can write to
+      APP_UPLOADS_DIR: /tmp/uploads
     expose:
       # `expose` makes the port reachable to other compose services
       # but does NOT publish it to the host. The frontend's nginx

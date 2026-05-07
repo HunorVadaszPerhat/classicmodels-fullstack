@@ -120,8 +120,9 @@ layer below is cached.
 Compare these two orderings:
 
 **Naive:**
+
 ```dockerfile
-COPY . .
+COPY .. .
 RUN mvn package
 ```
 Every code change rewrites the entire `.`. Maven re-downloads the

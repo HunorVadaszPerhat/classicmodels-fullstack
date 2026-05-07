@@ -248,10 +248,9 @@ export class EmployeeDetailComponent implements OnInit, OnDestroy {
     // would silently propagate to the backend as `?id=NaN` and surface as
     // a confusing 400 from MethodArgumentTypeMismatchException. Catch it
     // here so we render a sensible error instead.
-    const raw = this.route.snapshot.paramMap.get('id');
-    const id = Number(raw);
-    if (raw === null || !Number.isInteger(id)) {
-      this.error.set(`Invalid employee id in URL: "${raw}"`);
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (id === null || !Number.isInteger(id)) {
+      this.error.set(`Invalid employee id in URL: "${id}"`);
       return;
     }
 

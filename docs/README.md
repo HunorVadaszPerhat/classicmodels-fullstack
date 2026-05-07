@@ -24,41 +24,41 @@ The 18-feature plan, grouped by theme.
 
 ### A. Map refinements
 
-- [01 — Rich popup on map marker](./01-rich-marker-popup.md) ✓
-- [02 — Office detail page with team + map](./02-office-detail-with-team.md) ✓
-- [03 — Global office overview map](./03-global-office-map.md) ✓
-- [04 — Geocode an office on demand](./04-geocode-on-demand.md) ✓
+- [01 — Rich popup on map marker](employees/01-rich-marker-popup.md) ✓
+- [02 — Office detail page with team + map](employees/02-office-detail-with-team.md) ✓
+- [03 — Global office overview map](employees/03-global-office-map.md) ✓
+- [04 — Geocode an office on demand](employees/04-geocode-on-demand.md) ✓
 
 ### B. Production-grade backend patterns
 
-- [05 — Audit columns + auto-population](./05-audit-columns.md) ✓
-- [06 — Server-side pagination, sorting, filtering](./06-server-side-pagination.md) ✓
-- [07 — Optimistic locking](./07-optimistic-locking.md) ✓
+- [05 — Audit columns + auto-population](employees/05-audit-columns.md) ✓
+- [06 — Server-side pagination, sorting, filtering](employees/06-server-side-pagination.md) ✓
+- [07 — Optimistic locking](employees/07-optimistic-locking.md) ✓
 
 ### C. Cross-stack features
 
-- [08 — Reassign-and-delete workflow](./08-reassign-and-delete.md) ✓
-- [09 — Photo uploads](./09-photo-uploads.md) ✓
-- [10 — Live updates via WebSocket](./10-live-updates-websocket.md) ✓
+- [08 — Reassign-and-delete workflow](employees/08-reassign-and-delete.md) ✓
+- [09 — Photo uploads](employees/09-photo-uploads.md) ✓
+- [10 — Live updates via WebSocket](employees/10-live-updates-websocket.md) ✓
 
 ### D. Data visualization
 
-- [11 — Org chart with D3](./11-org-chart-d3.md) ✓
-- [12 — Sales dashboard with Chart.js](./12-sales-dashboard-chartjs.md) ✓
-- [13 — Customer lifetime value](./13-customer-lifetime-value.md) ✓
+- [11 — Org chart with D3](employees/11-org-chart-d3.md) ✓
+- [12 — Sales dashboard with Chart.js](employees/12-sales-dashboard-chartjs.md) ✓
+- [13 — Customer lifetime value](employees/13-customer-lifetime-value.md) ✓
 
 ### E. Bulk operations
 
-- [14 — Multi-select + bulk actions](./14-multi-select-bulk-actions.md) ✓
+- [14 — Multi-select + bulk actions](employees/14-multi-select-bulk-actions.md) ✓
 
 ### F. Auth extension
 
-- [15 — OAuth2 with Google sign-in](./15-oauth2-google-signin.md) ✓
+- [15 — OAuth2 with Google sign-in](employees/15-oauth2-google-signin.md) ✓
 
 ### G. Operational tooling
 
-- [16 — Spring Boot Actuator + Prometheus](./16-actuator-prometheus.md) ✓
-- [17 — Docker Compose for the full stack](./17-docker-compose-fullstack.md) ✓
+- [16 — Spring Boot Actuator + Prometheus](employees/16-actuator-prometheus.md) ✓
+- [17 — Docker Compose for the full stack](employees/17-docker-compose-fullstack.md) ✓
 - 18 — GitHub Actions CI (pending)
 
 ## How to read these docs
