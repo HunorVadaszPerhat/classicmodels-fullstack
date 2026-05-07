@@ -1,0 +1,16 @@
+# Spring Boot
+classicmodels-backend/target/
+classicmodels-backend/uploads/
+
+# Angular
+classicmodels-ui/node_modules/
+classicmodels-ui/dist/
+
+# IntelliJ / VSCode
+.idea/
+.vscode/
+.mvn/
+
+# General
+.DS_Store
+*.env
