@@ -1,0 +1,82 @@
+### Variables
+@host = http://localhost:9090
+@base = /api/v1/products
+@json = application/json
+@code = S10_9999
+
+### Find all products
+GET {{host}}{{base}}
+Accept: {{json}}
+
+### Find product by code
+GET {{host}}{{base}}/{{code}}
+Accept: {{json}}
+
+### Create new product
+POST {{host}}{{base}}
+Content-Type: {{json}}
+
+{
+  "productCode": "{{code}}",
+  "productName": "Super Car",
+  "productLine": "Classic Cars",
+  "productScale": "1:10",
+  "productVendor": "Chimken Models",
+  "productDescription": "A finely detailed super car.",
+  "quantityInStock": 50,
+  "buyPrice": 49.99,
+  "msrp": 79.99
+}
+
+### Update existing product
+PUT {{host}}{{base}}/{{code}}
+Content-Type: {{json}}
+
+{
+  "productCode": "{{code}}",
+  "productName": "Super Car - Updated",
+  "productLine": "Classic Cars",
+  "productScale": "1:10",
+  "productVendor": "Chimken Models",
+  "productDescription": "An updated finely detailed super car.",
+  "quantityInStock": 60,
+  "buyPrice": 54.99,
+  "msrp": 84.99
+}
+
+### Find all products (paged)
+GET {{host}}{{base}}/find-all-paged?page=0&size=20&sort=productName&dir=asc
+Accept: {{json}}
+
+### Create products in bulk (accepted)
+POST {{host}}{{base}}/bulk
+Content-Type: {{json}}
+
+[
+  {
+    "productCode": "S10_1000",
+    "productName": "Model Truck",
+    "productLine": "Trucks and Buses",
+    "productScale": "1:12",
+    "productVendor": "Chimken Models",
+    "productDescription": "A finely detailed model truck.",
+    "quantityInStock": 40,
+    "buyPrice": 29.99,
+    "msrp": 49.99
+  },
+  {
+    "productCode": "S10_1001",
+    "productName": "Model Plane",
+    "productLine": "Planes",
+    "productScale": "1:18",
+    "productVendor": "Chimken Models",
+    "productDescription": "A finely detailed model plane.",
+    "quantityInStock": 30,
+    "buyPrice": 59.99,
+    "msrp": 89.99
+  }
+]
+
+### Delete product
+DELETE {{host}}{{base}}/{{code}}
+Accept: {{json}}

@@ -1,0 +1,104 @@
+<div class="page">
+  <div class="header">
+    <h2>Sales dashboard</h2>
+    <button mat-stroked-button (click)="refresh()" [disabled]="loading()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Loading dashboard…</span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (data(); as d) {
+    <!--
+      KPI tiles.
+      Each one is a mat-card with a small label + a large value. The
+      grid in the stylesheet auto-fits as the viewport gets wider.
+    -->
+    <div class="kpi-row">
+      <mat-card class="kpi-card">
+        <div class="kpi-label">
+          <mat-icon>attach_money</mat-icon>
+          Total revenue
+        </div>
+        <div class="kpi-value">{{ formatMoney(d.totalRevenue) }}</div>
+      </mat-card>
+
+      <mat-card class="kpi-card">
+        <div class="kpi-label">
+          <mat-icon>receipt_long</mat-icon>
+          Total orders
+        </div>
+        <div class="kpi-value">{{ formatNumber(d.totalOrders) }}</div>
+      </mat-card>
+
+      <mat-card class="kpi-card">
+        <div class="kpi-label">
+          <mat-icon>shopping_bag</mat-icon>
+          Avg order value
+        </div>
+        <div class="kpi-value">{{ formatMoney(d.averageOrderValue) }}</div>
+      </mat-card>
+
+      <mat-card class="kpi-card">
+        <div class="kpi-label">
+          <mat-icon>group</mat-icon>
+          Active customers
+        </div>
+        <div class="kpi-value">{{ formatNumber(d.activeCustomers) }}</div>
+      </mat-card>
+    </div>
+
+    <!--
+      Charts grid. Each canvas is wrapped in a fixed-height container
+      because Chart.js sizes itself to its parent — without an explicit
+      height, the canvas would collapse to 0.
+    -->
+    <div class="charts-grid">
+      <mat-card class="chart-card">
+        <div class="chart-title">Revenue by month</div>
+        <div class="chart-canvas-wrap">
+          <canvas #revenueByMonthCanvas></canvas>
+        </div>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <div class="chart-title">Revenue by product line</div>
+        <div class="chart-canvas-wrap">
+          <canvas #productLineCanvas></canvas>
+        </div>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <div class="chart-title">Top 10 customers (click a bar to drill in)</div>
+        <div class="chart-canvas-wrap">
+          <canvas #topCustomersCanvas></canvas>
+        </div>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <div class="chart-title">Orders by status</div>
+        <div class="chart-canvas-wrap">
+          <canvas #ordersByStatusCanvas></canvas>
+        </div>
+      </mat-card>
+    </div>
+
+    <p class="footer-note">
+      Snapshot computed on demand from the orders / orderdetails / customers
+      tables. Click <b>Refresh</b> to re-query.
+    </p>
+  }
+</div>

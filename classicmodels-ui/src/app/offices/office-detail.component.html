@@ -1,0 +1,102 @@
+<a routerLink="../" class="back-link">
+  <mat-icon>arrow_back</mat-icon>
+  Back to offices
+</a>
+
+@if (loading()) {
+  <div class="loading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Loading office…</span>
+  </div>
+}
+
+@if (error()) {
+  <mat-card>
+    <mat-card-content>{{ error() }}</mat-card-content>
+  </mat-card>
+}
+
+@if (office(); as o) {
+  <mat-card class="detail-card">
+    <mat-card-header>
+      <mat-card-title>{{ o.city }} office</mat-card-title>
+      <mat-card-subtitle>code {{ o.officeCode }} · {{ o.territory }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <dl class="fields">
+        <dt><mat-icon>place</mat-icon> Address</dt>
+        <dd>
+          {{ o.addressLine1 }}@if (o.addressLine2) {<br>{{ o.addressLine2 }}}
+          @if (o.state) {<br>{{ o.state }} {{ o.postalCode }}}
+          @else {<br>{{ o.postalCode }}}
+          <br>{{ o.country }}
+        </dd>
+
+        <dt><mat-icon>call</mat-icon> Phone</dt>
+        <dd>{{ o.phone }}</dd>
+      </dl>
+
+      @if (o.lat != null && o.lng != null) {
+        <div class="map-wrap">
+          <app-mini-map
+            [lat]="o.lat"
+            [lng]="o.lng"
+            [popupHtml]="buildPopup(o, team()?.length ?? 0)">
+          </app-mini-map>
+        </div>
+      }
+
+      <!--
+        Team list. We render whatever shape the team signal is in:
+        undefined while loading (suppressed by the outer @if loading
+        block), an empty array if no employees are assigned, or one
+        row per employee.
+      -->
+      <section class="team">
+        <h3>Team ({{ team()?.length ?? 0 }})</h3>
+
+        @if (team(); as members) {
+          @if (members.length === 0) {
+            <p class="team-empty">No active employees assigned to this office.</p>
+          } @else {
+            @for (m of members; track m.employeeNumber) {
+              <div class="team-row">
+                <span class="team-name">
+                  <a [routerLink]="['/employees', m.employeeNumber]">
+                    {{ m.firstName }} {{ m.lastName }}
+                  </a>
+                </span>
+                <span class="team-title">— {{ m.jobTitle }}</span>
+              </div>
+            }
+          }
+        }
+      </section>
+    </mat-card-content>
+
+    @if (geocodeMessage()) {
+      <div style="padding: 0 1rem 0.5rem; color: rgba(0,0,0,0.7); font-size: 0.9rem;">
+        {{ geocodeMessage() }}
+      </div>
+    }
+
+    <mat-card-actions align="end">
+      <!--
+        Geocode button. Disabled while a request is in flight so the
+        user can't trigger duplicate Nominatim calls (Nominatim's fair-
+        use rules cap us at ~1 req/sec anyway).
+      -->
+      <button mat-stroked-button
+              type="button"
+              [disabled]="geocoding()"
+              (click)="runGeocode()">
+        <mat-icon>my_location</mat-icon>
+        {{ geocoding() ? 'Geocoding…' : 'Geocode address' }}
+      </button>
+      <a mat-stroked-button [routerLink]="['edit']">
+        <mat-icon>edit</mat-icon> Edit
+      </a>
+    </mat-card-actions>
+  </mat-card>
+}

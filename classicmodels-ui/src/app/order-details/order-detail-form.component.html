@@ -1,0 +1,40 @@
+<h2>{{isEdit ? 'Edit' : 'New'}} Order Detail</h2>
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-form-field>
+    <mat-label>Order Number</mat-label>
+    <input matInput type="number" formControlName="orderNumber" required [readonly]="isEdit" />
+    @if (form.controls.orderNumber.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Product Code</mat-label>
+    <input matInput formControlName="productCode" required [readonly]="isEdit" />
+    @if (form.controls.productCode.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Quantity Ordered</mat-label>
+    <input matInput type="number" formControlName="quantityOrdered" required />
+    @if (form.controls.quantityOrdered.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Price Each</mat-label>
+    <input matInput type="number" formControlName="priceEach" required />
+    @if (form.controls.priceEach.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Order Line Number</mat-label>
+    <input matInput type="number" formControlName="orderLineNumber" required />
+    @if (form.controls.orderLineNumber.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Save</button>
+  <a mat-button routerLink="../">Cancel</a>
+</form>

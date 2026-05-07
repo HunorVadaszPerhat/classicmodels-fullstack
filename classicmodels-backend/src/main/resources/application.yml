@@ -1,0 +1,155 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3307/classicmodels?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: appuser
+    password: apppass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: never
+
+  # ---------------------------------------------------------------------
+  # Flyway configuration
+  # ---------------------------------------------------------------------
+  # The classicmodels database was loaded from a SQL dump BEFORE we added
+  # Flyway. Flyway needs to know that this pre-existing schema is the
+  # starting point ("baseline") so it doesn't try to recreate the tables
+  # from scratch.
+  #
+  # baseline-on-migrate=true  -> on first run, if `flyway_schema_history`
+  #                              doesn't exist, create it and mark the
+  #                              current DB state as the baseline version.
+  # baseline-version=1        -> the baseline is recorded as version 1.
+  #                              Therefore any V1__*.sql file we add later
+  #                              would be SKIPPED (treated as already
+  #                              applied). Real changes start at V2.
+  # locations=classpath:db/migration -> default; included for clarity.
+  #
+  # In a fresh project you'd just put a V1__init.sql with the full schema
+  # and skip baselining altogether.
+  # ---------------------------------------------------------------------
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
+
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG
+
+# ---------------------------------------------------------------------
+# Actuator + metrics (Feature 16)
+# ---------------------------------------------------------------------
+# By default Spring Boot only exposes /actuator/health over HTTP.
+# Below we opt in to the endpoints we actually want visible:
+#
+#   health      — liveness/readiness, plus DB / disk / mail subchecks
+#   info        — build version, git commit, anything info contributors emit
+#   metrics     — JSON snapshot of every Micrometer meter
+#   prometheus  — same metrics in Prometheus text format (scrape endpoint)
+#   env         — resolved property values (sensitive — admin-only)
+#   loggers     — list / change log levels at runtime
+#   mappings    — every URL → handler mapping (debugging aid)
+#
+# `health.show-details: always` reveals the sub-component breakdown
+# (DB url, ping time, etc.). In production you'd want
+# `when-authorized` so anonymous health probes only get UP/DOWN.
+#
+# Tags applied to every metric let us filter by app/instance in
+# Prometheus / Grafana later. The `application` tag matches what
+# Spring Boot puts on traces by default.
+# ---------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, env, loggers, mappings, beans
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true   # exposes /actuator/health/liveness and /readiness
+  metrics:
+    tags:
+      application: classicmodels-backend
+  info:
+    env:
+      enabled: true     # lets us put info.* properties below into /actuator/info
+
+# Anything under info.* shows up in /actuator/info.
+info:
+  app:
+    name: Classic Models Backend
+    description: Spring Boot learning project — full-stack
+    java-version: ${java.version}
+
+server:
+  port: ${PORT:9090}
+  servlet:
+    context-path: /api/v1
+
+# ---------------------------------------------------------------------
+# Application feature flags
+# ---------------------------------------------------------------------
+# allow-deep-cascade: enables the DEEP_CASCADE delete strategy on the
+#   employees endpoint. When false (the default), the service refuses
+#   to execute that strategy even if it's requested via the API. This
+#   is a deliberate "off by default" production safeguard — DEEP_CASCADE
+#   destroys orders, order details, and payments, and should only be
+#   reachable when an operator has consciously turned it on for a
+#   non-production environment.
+#
+#   To enable for testing: set APP_DELETE_ALLOW_DEEP_CASCADE=true in
+#   the environment, or run with --app.delete.allow-deep-cascade=true.
+# ---------------------------------------------------------------------
+app:
+  delete:
+    allow-deep-cascade: false
+
+  # ---------------------------------------------------------------------
+  # JWT signing key + token TTL
+  # ---------------------------------------------------------------------
+  # secret: must be at least 32 bytes (256 bits) for HS256. In production
+  #   this should come from a secret manager / environment variable, NOT
+  #   from a YAML file checked into git. For learning, a placeholder is
+  #   fine, but if you ever deploy this, change it to something random
+  #   and load it via APP_JWT_SECRET.
+  # ttl-minutes: how long an issued token is valid. Short-lived tokens
+  #   are safer (a stolen token is only useful for ttl minutes) but
+  #   require refresh-token machinery for good UX. We pick 60 min as a
+  #   teaching middle ground — Stage 3 doesn't implement refresh.
+  # ---------------------------------------------------------------------
+  jwt:
+    secret: ${APP_JWT_SECRET:dev-only-change-me-please-make-this-32-bytes-or-more}
+    ttl-minutes: 60
+
+  # ---------------------------------------------------------------------
+  # Frontend redirect target after a successful OAuth2 sign-in (F15)
+  # ---------------------------------------------------------------------
+  # The Google CLIENT REGISTRATION (client-id / client-secret / scope)
+  # lives only in application-local.yml — it's environment-specific
+  # and gitignored. See docs/15-oauth2-google-signin.md.
+  #
+  # OAuth2LoginSuccessHandler reads the value below and appends
+  # "#token=<jwt>" before 302-redirecting. In dev the SPA lives on the
+  # same origin as the backend through the proxy, so a relative path is
+  # fine; in prod you'd point this at the SPA's full URL.
+  # ---------------------------------------------------------------------
+  oauth2:
+    success-redirect: ${OAUTH2_SUCCESS_REDIRECT:/login/oauth2/success}
+
+  # Geocoding (see GeocodingService).
+  geocoding:
+    trust-all-certs: true
+
+  # Where uploaded photos land on disk (see PhotoStorageService).
+  uploads:
+    dir: ${APP_UPLOADS_DIR:./uploads}
+
+# Spring Boot's built-in multipart limits. Defaults are 1MB which is
+# tight for photos straight off a phone. We bump to 5MB;
+# max-request-size matters if a request carries multiple files.
+spring.servlet.multipart.max-file-size: 5MB
+spring.servlet.multipart.max-request-size: 5MB

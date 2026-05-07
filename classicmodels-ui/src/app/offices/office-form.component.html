@@ -1,0 +1,59 @@
+<h2>{{isEdit ? 'Edit' : 'New'}} Office</h2>
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-form-field>
+    <mat-label>Office Code</mat-label>
+    <input matInput formControlName="officeCode" required [readonly]="isEdit" />
+    @if (form.controls.officeCode.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>City</mat-label>
+    <input matInput formControlName="city" required />
+    @if (form.controls.city.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Phone</mat-label>
+    <input matInput formControlName="phone" required />
+    @if (form.controls.phone.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Address Line 1</mat-label>
+    <input matInput formControlName="addressLine1" required />
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Address Line 2</mat-label>
+    <input matInput formControlName="addressLine2" />
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>State</mat-label>
+    <input matInput formControlName="state" />
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Country</mat-label>
+    <input matInput formControlName="country" required />
+    @if (form.controls.country.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Postal Code</mat-label>
+    <input matInput formControlName="postalCode" required />
+    @if (form.controls.postalCode.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Territory</mat-label>
+    <input matInput formControlName="territory" required />
+    @if (form.controls.territory.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Save</button>
+  <a mat-button routerLink="../">Cancel</a>
+</form>

@@ -1,0 +1,68 @@
+<h2>{{isEdit ? 'Edit' : 'New'}} Product</h2>
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-form-field>
+    <mat-label>Product Code</mat-label>
+    <input matInput formControlName="productCode" required [readonly]="isEdit" />
+    @if (form.controls.productCode.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Product Name</mat-label>
+    <input matInput formControlName="productName" required />
+    @if (form.controls.productName.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Product Line</mat-label>
+    <input matInput formControlName="productLine" required />
+    @if (form.controls.productLine.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Product Scale</mat-label>
+    <input matInput formControlName="productScale" required />
+    @if (form.controls.productScale.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Product Vendor</mat-label>
+    <input matInput formControlName="productVendor" required />
+    @if (form.controls.productVendor.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Product Description</mat-label>
+    <textarea matInput formControlName="productDescription" required></textarea>
+    @if (form.controls.productDescription.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Quantity In Stock</mat-label>
+    <input matInput type="number" formControlName="quantityInStock" required />
+    @if (form.controls.quantityInStock.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Buy Price</mat-label>
+    <input matInput type="number" formControlName="buyPrice" required />
+    @if (form.controls.buyPrice.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>MSRP</mat-label>
+    <input matInput type="number" formControlName="MSRP" required />
+    @if (form.controls.MSRP.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Save</button>
+  <a mat-button routerLink="../">Cancel</a>
+</form>

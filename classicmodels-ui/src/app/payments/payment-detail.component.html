@@ -1,0 +1,15 @@
+<a routerLink="../">Back</a>
+@if (payment()) {
+  <mat-card>
+    <mat-card-title>Payment {{payment()!.customerNumber}}/{{payment()!.checkNumber}}</mat-card-title>
+    <mat-card-content>
+      <pre>{{ payment() | json }}</pre>
+    </mat-card-content>
+  </mat-card>
+}
+@if (loading()) {
+  <div>Loading...</div>
+}
+@if (error()) {
+  <div>Error: {{ error() }}</div>
+}

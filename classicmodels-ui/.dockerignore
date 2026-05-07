@@ -1,0 +1,18 @@
+# Speeds up `docker build` and prevents leaking dev junk into images.
+
+node_modules/
+dist/
+.angular/
+.vscode/
+.idea/
+*.iml
+
+.git/
+.gitignore
+
+# Coverage reports / test outputs
+coverage/
+
+# OS junk
+.DS_Store
+Thumbs.db

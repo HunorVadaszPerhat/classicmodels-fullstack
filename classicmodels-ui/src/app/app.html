@@ -1,0 +1,59 @@
+<mat-toolbar color="primary">
+  <a routerLink="/" class="brand">Classic Models</a>
+
+  <!--
+    Nav links are only useful to logged-in users; while logged out, the
+    only meaningful place to be is /login. Hide the nav until auth is
+    established to avoid showing dead links that would just bounce to
+    the login screen anyway.
+  -->
+  @if (auth.isLoggedIn()) {
+    <nav class="toolbar-nav">
+      @for (link of navLinks; track link.path) {
+        <a mat-button
+           [routerLink]="link.path"
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{ exact: false }">
+          {{ link.label }}
+        </a>
+      }
+      <!--
+        Admin-only system status link. Renders only if the current
+        user has ROLE_ADMIN. The backend additionally enforces
+        admin-only access on /actuator/** so a non-admin clicking a
+        hand-crafted URL still gets 403 there.
+      -->
+      @if (isAdmin()) {
+        <a mat-button
+           routerLink="/admin/health"
+           routerLinkActive="active">
+          <mat-icon>monitor_heart</mat-icon>
+          Status
+        </a>
+      }
+    </nav>
+  }
+
+  <span class="spacer"></span>
+
+  <!-- Right-aligned user info / login state -->
+  @if (auth.currentUser(); as u) {
+    <span class="user-chip">
+      <mat-icon class="user-icon">account_circle</mat-icon>
+      {{ u.username }}
+    </span>
+    <button mat-button (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Sign out
+    </button>
+  } @else {
+    <a mat-button routerLink="/login">
+      <mat-icon>login</mat-icon>
+      Sign in
+    </a>
+  }
+</mat-toolbar>
+
+<div class="container">
+  <router-outlet></router-outlet>
+</div>

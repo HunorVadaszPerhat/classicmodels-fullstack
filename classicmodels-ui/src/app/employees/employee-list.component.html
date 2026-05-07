@@ -1,0 +1,138 @@
+<!--
+  Bulk-action bar — only renders when at least one row is selected.
+  Lives ABOVE the regular toolbar so its actions are always visible
+  even on narrow screens where the toolbar wraps.
+-->
+@if (hasSelection()) {
+  <div class="bulk-bar">
+    <span class="count">
+      {{ selectedCount() }} selected
+    </span>
+    <button mat-button color="warn" (click)="bulkDelete()">
+      <mat-icon>delete_sweep</mat-icon>
+      Delete selected
+    </button>
+    <button mat-button (click)="clearSelection()">
+      <mat-icon>close</mat-icon>
+      Clear
+    </button>
+  </div>
+}
+
+<div class="toolbar">
+  <h2>Employees</h2>
+
+  <!--
+    Search field. (ngModelChange) calls onSearchInput which pushes the
+    value through an RxJS Subject; the subject debounces for 300ms before
+    triggering a fetch. So keystrokes don't hit the backend, but pauses do.
+  -->
+  <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+    <mat-label>Search</mat-label>
+    <input matInput
+           [ngModel]="searchText"
+           (ngModelChange)="onSearchInput($event)"
+           placeholder="Name or email" />
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <a mat-stroked-button routerLink="org-chart">
+    <mat-icon>account_tree</mat-icon>
+    Org chart
+  </a>
+  <button mat-raised-button color="primary" routerLink="new">New Employee</button>
+</div>
+
+<!--
+  matSort emits (matSortChange) when the user clicks a sortable header.
+  matSortActive / matSortDirection set the initial sort state — they
+  must match what we send to the backend by default.
+-->
+<table mat-table
+       [dataSource]="employees()"
+       matSort
+       [matSortActive]="sortField()"
+       [matSortDirection]="sortDir()"
+       (matSortChange)="onSortChange($event)">
+
+  <!--
+    The leading select column. Header is a tri-state checkbox driven by
+    pageSelectionState():
+      - 'none'         → unchecked, no indeterminate
+      - 'some'         → checked + indeterminate (Material renders the
+                          mid-state visually as a horizontal bar)
+      - 'all'          → checked, no indeterminate
+    Clicking the header always calls togglePage(), which inverts based
+    on the current state.
+
+    $event.stopPropagation() on the row checkbox prevents the click
+    from bubbling to anything that might also be listening on the row
+    (currently nothing, but it's cheap insurance).
+  -->
+  <ng-container matColumnDef="select">
+    <th mat-header-cell *matHeaderCellDef>
+      <mat-checkbox
+        [checked]="pageSelectionState() === 'all'"
+        [indeterminate]="pageSelectionState() === 'some'"
+        (change)="togglePage()"
+        aria-label="Select all on this page">
+      </mat-checkbox>
+    </th>
+    <td mat-cell *matCellDef="let e">
+      <mat-checkbox
+        [checked]="isSelected(e)"
+        (change)="toggleRow(e)"
+        (click)="$event.stopPropagation()"
+        aria-label="Select row">
+      </mat-checkbox>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="employeeNumber">
+    <th mat-header-cell *matHeaderCellDef>#</th>
+    <td mat-cell *matCellDef="let e">{{ e.employeeNumber }}</td>
+  </ng-container>
+  <ng-container matColumnDef="lastName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</th>
+    <td mat-cell *matCellDef="let e">{{ e.lastName }}</td>
+  </ng-container>
+  <ng-container matColumnDef="firstName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
+    <td mat-cell *matCellDef="let e">{{ e.firstName }}</td>
+  </ng-container>
+  <ng-container matColumnDef="email">
+    <th mat-header-cell *matHeaderCellDef>Email</th>
+    <td mat-cell *matCellDef="let e">{{ e.email }}</td>
+  </ng-container>
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let e">
+      <a mat-button [routerLink]="e.employeeNumber">View</a>
+      <a mat-button [routerLink]="e.employeeNumber + '/edit'">Edit</a>
+      <button mat-button color="warn" (click)="remove(e)">Delete</button>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+
+<!--
+  Server-side paginator. [length] reflects the total count from the
+  backend, NOT the size of the current rendered page. (page) emits a
+  PageEvent on every Next/Prev/size change.
+-->
+<mat-paginator
+  [length]="total()"
+  [pageIndex]="pageIndex()"
+  [pageSize]="pageSize()"
+  [pageSizeOptions]="[5, 10, 25, 50]"
+  showFirstLastButtons
+  (page)="onPageChange($event)">
+</mat-paginator>
+
+@if (loading()) {
+  <div>Loading…</div>
+}
+@if (error()) {
+  <div>Error: {{ error() }}</div>
+}

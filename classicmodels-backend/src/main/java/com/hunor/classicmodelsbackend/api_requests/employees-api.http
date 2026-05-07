@@ -1,0 +1,74 @@
+### Variables
+@host = http://localhost:9090
+@base = /api/v1/employees
+@json = application/json
+@id = 123456
+
+### Find all employees (paged)
+GET {{host}}{{base}}/find-all-paged?page=0&size=20&sort=lastName&dir=asc
+Accept: {{json}}
+
+### Find all employees
+GET {{host}}{{base}}
+Accept: {{json}}
+
+### Find employee by ID
+GET {{host}}{{base}}/{{id}}
+Accept: {{json}}
+
+### Create new employee
+POST {{host}}{{base}}
+Content-Type: {{json}}
+
+{
+  "lastName": "Doe",
+  "firstName": "John",
+  "extension": "x321",
+  "email": "john.doe@example.com",
+  "officeCode": "1",
+  "reportsTo": 1002,
+  "jobTitle": "Sales Rep"
+}
+
+### Update existing employee
+PUT {{host}}{{base}}/{{id}}
+Content-Type: {{json}}
+
+{
+  "lastName": "Doe",
+  "firstName": "Jane",
+  "extension": "x322",
+  "email": "jane.doe@example.com",
+  "officeCode": "1",
+  "reportsTo": 1002,
+  "jobTitle": "Sales Manager"
+}
+
+### Create employees in bulk (accepted)
+POST {{host}}{{base}}/bulk
+Content-Type: {{json}}
+
+[
+  {
+    "lastName": "Smith",
+    "firstName": "Anna",
+    "extension": "x400",
+    "email": "anna.smith@example.com",
+    "officeCode": "1",
+    "reportsTo": 1002,
+    "jobTitle": "Developer"
+  },
+  {
+    "lastName": "Brown",
+    "firstName": "Bob",
+    "extension": "x401",
+    "email": "bob.brown@example.com",
+    "officeCode": "2",
+    "reportsTo": 1002,
+    "jobTitle": "Support Engineer"
+  }
+]
+
+### Delete employee
+DELETE {{host}}{{base}}/{{id}}
+Accept: {{json}}

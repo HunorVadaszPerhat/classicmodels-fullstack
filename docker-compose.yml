@@ -1,0 +1,137 @@
+# =============================================================================
+# Full-stack Docker Compose — runs the entire app in containers.
+# =============================================================================
+# Lives at the repo root (next to classicmodels-backend/ and classicmodels-ui/).
+#
+# How it relates to classicmodels-backend/docker-compose.yml:
+#
+#   - The backend's local docker-compose.yml is used by Spring Boot's
+#     spring-boot-docker-compose support during ./mvnw spring-boot:run.
+#     It only starts the database; the JVM runs on the host.
+#
+#   - THIS file starts everything in containers: db + backend + frontend.
+#     The "production-shaped" mode for when you want one command to spin
+#     up the whole app (CI integration tests, demos, deploying to a
+#     single VM, etc.).
+#
+# Run from this directory (the repo root):
+#
+#     docker compose up --build
+#
+# Then open http://localhost/ in a browser. Everything is reachable
+# through the nginx container on port 80 — no separate dev-server needed.
+#
+# Stop and clean up:
+#     docker compose down              # keeps the database volume
+#     docker compose down -v           # also wipes the database volume
+#
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # db — MySQL 8.4. Same image and seed file as the dev-mode compose, but
+  # under different container/volume names so the two modes can coexist
+  # cleanly on the same machine.
+  # ---------------------------------------------------------------------------
+  db:
+    image: mysql:8.4
+    container_name: classicmodels-fullstack-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: classicmodels
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    # Expose 3307 on the host too, so you can connect with a SQL client.
+    # Inside the compose network, services reach this container as
+    # "db:3306" — no port mapping needed for the backend to connect.
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      # Bind-mount the seed SQL the same way the dev compose does. The
+      # path is relative to this compose file (which sits at the repo
+      # root next to the two app folders).
+      - ./classicmodels-backend/db/init/01-mysqlsampledatabase_auto_increment.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      # mysqladmin ping returns 0 once the server accepts connections.
+      # This is what `depends_on: condition: service_healthy` waits for.
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uappuser", "-papppass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------------------
+  # backend — Spring Boot application. Built from the Dockerfile in the
+  # classicmodels-backend folder. Talks to "db" inside the compose
+  # network using its service name as the hostname.
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./classicmodels-backend
+      dockerfile: Dockerfile
+    container_name: classicmodels-fullstack-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Override the JDBC URL: in dev it points at localhost:3307, but
+      # inside the compose network we reach MySQL via the "db" service
+      # name on its native 3306 port.
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/classicmodels?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: apppass
+
+      # Disable spring-boot-docker-compose's auto-detection of the
+      # backend's local docker-compose.yml — we're already inside Docker.
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+
+      # JWT secret — for a learning project it's fine to share the dev
+      # value, but in real deployments this comes from a secrets manager.
+      APP_JWT_SECRET: dev-only-change-me-please-make-this-32-bytes-or-more
+
+      # OAuth2 stays disabled inside the container by default. To enable,
+      # uncomment and supply real values (or pass them via an env file
+      # with `--env-file`):
+      #
+      # GOOGLE_CLIENT_ID:     "..."
+      # GOOGLE_CLIENT_SECRET: "..."
+      #
+      # The redirect URI registered in Google Cloud Console must also
+      # change — in compose mode the browser hits http://localhost/
+      # rather than http://localhost:4200/, so register
+      # http://localhost/api/v1/login/oauth2/code/google.
+    expose:
+      # `expose` makes the port reachable to other compose services
+      # but does NOT publish it to the host. The frontend's nginx
+      # talks to backend:9090 via the compose network.
+      - "9090"
+    # Optionally publish the backend port to the host too (useful for
+    # debugging — curl localhost:9091/api/v1/actuator/health from your
+    # laptop). Comment out if you want full isolation.
+    ports:
+      - "9091:9090"
+
+  # ---------------------------------------------------------------------------
+  # frontend — Built Angular SPA served by nginx. nginx also reverse-proxies
+  # /api/* to the backend, so from the browser's perspective everything
+  # comes from the same origin (http://localhost/).
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./classicmodels-ui
+      dockerfile: Dockerfile
+    container_name: classicmodels-fullstack-frontend
+    depends_on:
+      - backend
+    ports:
+      # Map host's 80 to nginx's 80 inside the container. If port 80
+      # is already in use on your machine (IIS, another nginx, Skype),
+      # change the LEFT side to something free, e.g. "8080:80".
+      - "80:80"
+
+# ---------------------------------------------------------------------------
+# Named volumes survive `docker compose down` so DB seed isn't re-run
+# every time. To start fresh use `docker compose down -v`.
+# ---------------------------------------------------------------------------
+volumes:
+  db_data:

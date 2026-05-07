@@ -1,0 +1,63 @@
+### Variables
+@host = http://localhost:9090
+@base = /api/v1/payments
+@json = application/json
+@customerNumber = 103
+@checkNumber = CK123
+
+### Find all payments (paged)
+GET {{host}}{{base}}/find-all-paged?page=0&size=20&sort=paymentDate&dir=asc
+Accept: {{json}}
+
+### Find all payments
+GET {{host}}{{base}}
+Accept: {{json}}
+
+### Find payment by composite key
+GET {{host}}{{base}}/{{customerNumber}}/{{checkNumber}}
+Accept: {{json}}
+
+### Create new payment
+POST {{host}}{{base}}
+Content-Type: {{json}}
+
+{
+  "customerNumber": {{customerNumber}},
+  "checkNumber": "{{checkNumber}}",
+  "paymentDate": "2025-08-01",
+  "amount": 1500.50
+}
+
+### Update existing payment
+PUT {{host}}{{base}}/{{customerNumber}}/{{checkNumber}}
+Content-Type: {{json}}
+
+{
+  "customerNumber": {{customerNumber}},
+  "checkNumber": "{{checkNumber}}",
+  "paymentDate": "2025-08-03",
+  "amount": 1750.00
+}
+
+### Create payments in bulk (accepted)
+POST {{host}}{{base}}/bulk
+Content-Type: {{json}}
+
+[
+  {
+    "customerNumber": 112,
+    "checkNumber": "CK200",
+    "paymentDate": "2025-08-04",
+    "amount": 900.00
+  },
+  {
+    "customerNumber": 119,
+    "checkNumber": "CK201",
+    "paymentDate": "2025-08-05",
+    "amount": 1250.75
+  }
+]
+
+### Delete payment
+DELETE {{host}}{{base}}/{{customerNumber}}/{{checkNumber}}
+Accept: {{json}}

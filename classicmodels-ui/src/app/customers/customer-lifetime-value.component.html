@@ -1,0 +1,98 @@
+<div class="page">
+  <a [routerLink]="['/customers', data()?.customerNumber ?? '..']" class="back-link">
+    <mat-icon>arrow_back</mat-icon> Back to customer
+  </a>
+
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Loading lifetime value…</span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (data(); as d) {
+    <div class="header">
+      <h2>{{ d.customerName }} — Lifetime value</h2>
+      <span class="segment-badge {{ d.segment }}"
+            [matTooltip]="segmentTooltip(d.segment)">
+        {{ formatSegment(d.segment) }}
+      </span>
+    </div>
+
+    <!--
+      Headline KPIs. predictedClv is the forward-looking number; the
+      others are historic. The footnote under the predicted card calls
+      that out.
+    -->
+    <div class="kpi-row">
+      <mat-card class="kpi-card">
+        <div class="kpi-label">Total revenue</div>
+        <div class="kpi-value">{{ formatMoney(d.totalRevenue) }}</div>
+        <div class="kpi-sub">historic, lifetime to date</div>
+      </mat-card>
+
+      <mat-card class="kpi-card">
+        <div class="kpi-label">Total orders</div>
+        <div class="kpi-value">{{ formatNumber(d.totalOrders) }}</div>
+        <div class="kpi-sub">over {{ formatDuration(d.tenureDays) }}</div>
+      </mat-card>
+
+      <mat-card class="kpi-card">
+        <div class="kpi-label">Avg order value</div>
+        <div class="kpi-value">{{ formatMoney(d.averageOrderValue) }}</div>
+        <div class="kpi-sub">revenue ÷ orders</div>
+      </mat-card>
+
+      <mat-card class="kpi-card">
+        <div class="kpi-label">Predicted CLV</div>
+        <div class="kpi-value">{{ formatMoney(d.predictedClv) }}</div>
+        <div class="kpi-sub">3-year projection</div>
+      </mat-card>
+    </div>
+
+    <!--
+      RFM trio. Each card shows the score (1-4), the axis name, and
+      a textual interpretation. The cards are tooltips by themselves
+      because hovering should be enough to learn what they mean.
+    -->
+    <div class="rfm-row">
+      <mat-card class="rfm-card"
+                matTooltip="How recently the customer last bought. 4 = most recent; 1 = least.">
+        <div class="rfm-letter">Recency (R)</div>
+        <div class="rfm-score">{{ d.rfm.recency }}<span class="rfm-out-of">/4</span></div>
+        <div class="rfm-meaning">{{ rfmMeaning('r', d.rfm.recency) }}</div>
+        <div class="kpi-sub">{{ d.recencyDays }} days since last order</div>
+      </mat-card>
+
+      <mat-card class="rfm-card"
+                matTooltip="How often they buy. 4 = top-quartile by order count; 1 = bottom.">
+        <div class="rfm-letter">Frequency (F)</div>
+        <div class="rfm-score">{{ d.rfm.frequency }}<span class="rfm-out-of">/4</span></div>
+        <div class="rfm-meaning">{{ rfmMeaning('f', d.rfm.frequency) }}</div>
+        <div class="kpi-sub">{{ d.totalOrders }} order(s)</div>
+      </mat-card>
+
+      <mat-card class="rfm-card"
+                matTooltip="How much they spend. 4 = top-quartile by revenue; 1 = bottom.">
+        <div class="rfm-letter">Monetary (M)</div>
+        <div class="rfm-score">{{ d.rfm.monetary }}<span class="rfm-out-of">/4</span></div>
+        <div class="rfm-meaning">{{ rfmMeaning('m', d.rfm.monetary) }}</div>
+        <div class="kpi-sub">{{ formatMoney(d.totalRevenue) }} lifetime</div>
+      </mat-card>
+    </div>
+
+    <mat-card class="chart-card">
+      <div class="chart-title">Order history</div>
+      <div class="chart-canvas-wrap">
+        <canvas #historyCanvas></canvas>
+      </div>
+    </mat-card>
+  }
+</div>

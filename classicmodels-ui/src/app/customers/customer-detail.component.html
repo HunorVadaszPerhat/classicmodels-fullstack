@@ -1,0 +1,33 @@
+<a routerLink="../">Back</a>
+@if (customer(); as customer) {
+  <mat-card>
+    <mat-card-title>{{ customer.customerName }}</mat-card-title>
+    <mat-card-content>
+      <div><strong>Customer Number:</strong> {{ customer.customerNumber }}</div>
+      <div><strong>Customer Name:</strong> {{ customer.customerName }}</div>
+      <div><strong>ContactComponent Last Name:</strong> {{ customer.contactLastName }}</div>
+      <div><strong>ContactComponent First Name:</strong> {{ customer.contactFirstName }}</div>
+      <div><strong>Phone:</strong> {{ customer.phone }}</div>
+      <div><strong>Address Line 1:</strong> {{ customer.addressLine1 }}</div>
+      <div><strong>Address Line 2:</strong> {{ customer.addressLine2 || '-' }}</div>
+      <div><strong>City:</strong> {{ customer.city }}</div>
+      <div><strong>State:</strong> {{ customer.state || '-' }}</div>
+      <div><strong>Postal Code:</strong> {{ customer.postalCode || '-' }}</div>
+      <div><strong>Country:</strong> {{ customer.country }}</div>
+      <div><strong>Sales Rep Employee Number:</strong> {{ customer.salesRepEmployeeNumber ?? '-' }}</div>
+      <div><strong>Credit Limit:</strong> {{ customer.creditLimit ?? '-' }}</div>
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-stroked-button color="primary" [routerLink]="['lifetime-value']">
+        <mat-icon>insights</mat-icon>
+        View lifetime value
+      </a>
+    </mat-card-actions>
+  </mat-card>
+}
+@if (loading()) {
+  <div>Loading...</div>
+}
+@if (error()) {
+  <div>Error: {{ error() }}</div>
+}

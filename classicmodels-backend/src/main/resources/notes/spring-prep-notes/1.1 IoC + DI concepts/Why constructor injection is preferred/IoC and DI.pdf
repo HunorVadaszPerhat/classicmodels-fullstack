@@ -1,0 +1,68 @@
+Objective 1.1 — Why Spring Exists: IoC, DI, and the Container
+Why Spring exists
+Before Spring, Java enterprise apps (J2EE) required you to manually wire together every dependency. If OrderService needed a PaymentGateway, you'd write new PaymentGateway() inside OrderService. That creates tight coupling — OrderService now controls the creation and lifecycle of its own dependencies, which makes it nearly impossible to swap implementations or test in isolation.
+
+Spring's core answer to this is Inversion of Control (IoC): instead of your code creating its dependencies, you hand that responsibility to a framework — the IoC container. Your class just declares what it needs, and the container figures out how to provide it.
+
+The practical payoffs are:
+
+Decoupling — OrderService depends on an interface, not a concrete class. Swap the implementation without touching OrderService.
+Testability — inject a mock PaymentGateway in tests instead of the real one.
+Enterprise integration — transactions, security, caching, etc. can be layered on without polluting business logic.
+IoC vs Dependency Injection vs Dependency Lookup
+IoC is the principle. There are two ways to implement it:
+
+Dependency Injection (DI) — the container pushes dependencies into your class. Your class is passive; it just receives what it needs. This is what Spring uses.
+
+Dependency Lookup — your class actively asks the container for a dependency (e.g. context.getBean(...)). Your class is aware of the container. This breaks testability and is considered an anti-pattern for application code.
+
+⚠️ EXAM TRAP: Calling ApplicationContext.getBean() inside your business logic is dependency lookup, not injection — and it's the thing Spring is trying to help you avoid. The exam may ask you to distinguish these.
+
+BeanFactory vs ApplicationContext
+Both are IoC containers. ApplicationContext extends BeanFactory and adds production-grade features.
+
+Feature	BeanFactory	ApplicationContext
+Basic DI	✅	✅
+Eager singleton init	❌ (lazy by default)	✅ (at startup)
+Event publishing	❌	✅
+MessageSource (i18n)	❌	✅
+BeanPostProcessor auto-registration	Manual	✅ Automatic
+AOP integration	Limited	✅
+In practice: always use ApplicationContext. BeanFactory exists mostly for constrained environments (embedded devices, etc.) where memory is critical. The exam may ask which one supports events or i18n — the answer is always ApplicationContext.
+
+The three DI types
+1. Constructor injection — PREFERRED
+
+@Service
+public class OrderService {
+    private final PaymentGateway paymentGateway;
+
+    public OrderService(PaymentGateway paymentGateway) {  // Spring injects here
+        this.paymentGateway = paymentGateway;
+    }
+}
+2. Setter injection — use when dependency is optional
+@Service
+public class OrderService {
+    private PaymentGateway paymentGateway;
+
+    @Autowired
+    public void setPaymentGateway(PaymentGateway paymentGateway) {
+        this.paymentGateway = paymentGateway;
+    }
+}
+3. Field injection — convenient but problematic
+@Service
+public class OrderService {
+    @Autowired
+    private PaymentGateway paymentGateway;  // Can't make final, hard to Inversion of Control
+}
+Why constructor injection is preferred:
+
+The field can be final — guarantees the dependency is never null after construction.
+Dependencies are explicit in the constructor signature — easy to see what a class needs.
+Works with plain new in unit tests — no Spring context required.
+With a single constructor in Spring 4.3+, @Autowired is optional — Spring infers it.
+Field injection hides dependencies and makes the class untestable without a Spring context or a reflection-based injector.
+
+Ready to move to 1.2.1 (@Configuration, @Bean, @Primary, @Qualifier) when you are. Or let me know if anything in 1.1 needs more depth.

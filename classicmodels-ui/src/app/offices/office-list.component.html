@@ -1,0 +1,52 @@
+<h2>Offices</h2>
+<button mat-raised-button color="primary" routerLink="new">New Office</button>
+
+<!--
+  Map first, table second. The map needs the offices data, which
+  arrives async via load(). While the data is loading the markers
+  signal evaluates to an empty array and the map shows the world view;
+  as soon as offices arrive, the computed markers signal updates and
+  the map re-renders + auto-zooms.
+-->
+@if (markers().length > 0) {
+  <section class="map-section">
+    <h3>Worldwide ({{ markers().length }} offices)</h3>
+    <app-markers-map [points]="markers()"></app-markers-map>
+  </section>
+}
+
+<table mat-table [dataSource]="offices()" matSort>
+  <ng-container matColumnDef="officeCode">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+    <td mat-cell *matCellDef="let o">{{o.officeCode}}</td>
+  </ng-container>
+  <ng-container matColumnDef="city">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>City</th>
+    <td mat-cell *matCellDef="let o">{{o.city}}</td>
+  </ng-container>
+  <ng-container matColumnDef="phone">
+    <th mat-header-cell *matHeaderCellDef>Phone</th>
+    <td mat-cell *matCellDef="let o">{{o.phone}}</td>
+  </ng-container>
+  <ng-container matColumnDef="country">
+    <th mat-header-cell *matHeaderCellDef>Country</th>
+    <td mat-cell *matCellDef="let o">{{o.country}}</td>
+  </ng-container>
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let o">
+      <a mat-button [routerLink]="o.officeCode">View</a>
+      <a mat-button [routerLink]="o.officeCode + '/edit'">Edit</a>
+      <button mat-button color="warn" (click)="remove(o.officeCode)">Delete</button>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+<mat-paginator [length]="total()" [pageSize]="10" (page)="load($event)"></mat-paginator>
+@if (loading()) {
+  <div>Loading...</div>
+}
+@if (error()) {
+  <div>Error: {{ error() }}</div>
+}

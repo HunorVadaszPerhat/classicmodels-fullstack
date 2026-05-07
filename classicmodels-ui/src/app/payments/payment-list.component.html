@@ -1,0 +1,37 @@
+<h2>Payments</h2>
+<button mat-raised-button color="primary" routerLink="new">New Payment</button>
+<table mat-table [dataSource]="payments()" matSort>
+  <ng-container matColumnDef="customerNumber">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
+    <td mat-cell *matCellDef="let p">{{p.customerNumber}}</td>
+  </ng-container>
+  <ng-container matColumnDef="checkNumber">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Check</th>
+    <td mat-cell *matCellDef="let p">{{p.checkNumber}}</td>
+  </ng-container>
+  <ng-container matColumnDef="paymentDate">
+    <th mat-header-cell *matHeaderCellDef>Date</th>
+    <td mat-cell *matCellDef="let p">{{p.paymentDate}}</td>
+  </ng-container>
+  <ng-container matColumnDef="amount">
+    <th mat-header-cell *matHeaderCellDef>Amount</th>
+    <td mat-cell *matCellDef="let p">{{p.amount}}</td>
+  </ng-container>
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let p">
+      <a mat-button [routerLink]="p.customerNumber + '/' + p.checkNumber">View</a>
+      <a mat-button [routerLink]="p.customerNumber + '/' + p.checkNumber + '/edit'">Edit</a>
+      <button mat-button color="warn" (click)="remove(p.customerNumber, p.checkNumber)">Delete</button>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+<mat-paginator [length]="total()" [pageSize]="10" (page)="load($event)"></mat-paginator>
+@if (loading()) {
+  <div>Loading...</div>
+}
+@if (error()) {
+  <div>Error: {{ error() }}</div>
+}

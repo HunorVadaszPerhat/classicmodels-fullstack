@@ -1,0 +1,90 @@
+// Employee-detail page styles. Kept self-contained so the rest of the
+// app shell doesn't have to know anything about this layout.
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.7);
+
+  &:hover { color: rgba(0, 0, 0, 0.9); }
+
+  mat-icon { font-size: 18px; height: 18px; width: 18px; }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.error-card {
+  border-left: 4px solid #b71c1c;
+
+  .error-icon {
+    color: #b71c1c;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+  }
+}
+
+.detail-card {
+  max-width: 720px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-chip {
+  font-size: 0.75rem;
+  min-height: 24px;
+  height: 24px;
+
+  &.active     { background: #e6f4ea; color: #1b5e20; }
+  &.terminated { background: #fdecea; color: #b71c1c; }
+}
+
+// Two-column "label → value" grid. Auto-laid out so labels stay aligned
+// regardless of value length, and each row wraps gracefully on narrow
+// viewports.
+.fields {
+  display: grid;
+  grid-template-columns: minmax(140px, max-content) 1fr;
+  column-gap: 1.25rem;
+  row-gap: 0.6rem;
+  margin: 0;
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: 500;
+
+    mat-icon {
+      font-size: 18px; height: 18px; width: 18px;
+      color: rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  dd {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.87);
+    word-break: break-word;
+  }
+}
+
+.muted {
+  color: rgba(0, 0, 0, 0.55);
+  margin-left: 0.4rem;
+  font-size: 0.875rem;
+}
+
+.office-code { font-style: italic; }

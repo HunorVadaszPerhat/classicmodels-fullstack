@@ -1,0 +1,37 @@
+<h2>Order Details</h2>
+<button mat-raised-button color="primary" routerLink="new">New Order Detail</button>
+<table mat-table [dataSource]="details()" matSort>
+  <ng-container matColumnDef="orderNumber">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Order</th>
+    <td mat-cell *matCellDef="let d">{{d.orderNumber}}</td>
+  </ng-container>
+  <ng-container matColumnDef="productCode">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Product</th>
+    <td mat-cell *matCellDef="let d">{{d.productCode}}</td>
+  </ng-container>
+  <ng-container matColumnDef="quantityOrdered">
+    <th mat-header-cell *matHeaderCellDef>Qty</th>
+    <td mat-cell *matCellDef="let d">{{d.quantityOrdered}}</td>
+  </ng-container>
+  <ng-container matColumnDef="priceEach">
+    <th mat-header-cell *matHeaderCellDef>Price</th>
+    <td mat-cell *matCellDef="let d">{{d.priceEach}}</td>
+  </ng-container>
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let d">
+      <a mat-button [routerLink]="d.orderNumber + '/' + d.productCode">View</a>
+      <a mat-button [routerLink]="d.orderNumber + '/' + d.productCode + '/edit'">Edit</a>
+      <button mat-button color="warn" (click)="remove(d.orderNumber, d.productCode)">Delete</button>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+<mat-paginator [length]="total()" [pageSize]="10" (page)="load($event)"></mat-paginator>
+@if (loading()) {
+  <div>Loading...</div>
+}
+@if (error()) {
+  <div>Error: {{ error() }}</div>
+}

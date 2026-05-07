@@ -1,0 +1,32 @@
+# Anything listed here is excluded from the build context that Docker
+# uploads to the daemon when running `docker build`. Smaller context →
+# faster builds, less risk of leaking dev artifacts into the image.
+
+target/
+.idea/
+.mvn/wrapper/maven-wrapper.jar
+*.iml
+*.ipr
+*.iws
+.git/
+.gitignore
+.vscode/
+
+# Local-only profile config — secrets, paths. Image must come up clean
+# without it; runtime config comes from environment variables / mounted
+# volumes.
+src/main/resources/application-local.yml
+src/main/resources/application-local-*.yml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor caches
+*.swp
+*.swo
+*~
+
+# Test reports we don't need
+**/target/
+**/*.log

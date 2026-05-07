@@ -1,0 +1,67 @@
+### Variables
+@host = http://localhost:9090
+@base = /api/v1/orderdetails
+@json = application/json
+@orderNumber = 10100
+@productCode = S10_1678
+
+### Find all order details (paged)
+GET {{host}}{{base}}/find-all-paged?page=0&size=20&sort=orderNumber&dir=asc
+Accept: {{json}}
+
+### Find all order details
+GET {{host}}{{base}}
+Accept: {{json}}
+
+### Find order detail by composite key
+GET {{host}}{{base}}/{{orderNumber}}/{{productCode}}
+Accept: {{json}}
+
+### Create new order detail
+POST {{host}}{{base}}
+Content-Type: {{json}}
+
+{
+  "orderNumber": {{orderNumber}},
+  "productCode": "{{productCode}}",
+  "quantityOrdered": 12,
+  "priceEach": 45.00,
+  "orderLineNumber": 1
+}
+
+### Update existing order detail
+PUT {{host}}{{base}}/{{orderNumber}}/{{productCode}}
+Content-Type: {{json}}
+
+{
+  "orderNumber": {{orderNumber}},
+  "productCode": "{{productCode}},
+  "quantityOrdered": 15,
+  "priceEach": 47.50,
+  "orderLineNumber": 1
+}
+
+### Create order details in bulk (accepted)
+POST {{host}}{{base}}/bulk
+Content-Type: {{json}}
+
+[
+  {
+    "orderNumber": 10101,
+    "productCode": "S10_1949",
+    "quantityOrdered": 5,
+    "priceEach": 95.00,
+    "orderLineNumber": 2
+  },
+  {
+    "orderNumber": 10102,
+    "productCode": "S12_1108",
+    "quantityOrdered": 3,
+    "priceEach": 120.00,
+    "orderLineNumber": 1
+  }
+]
+
+### Delete order detail
+DELETE {{host}}{{base}}/{{orderNumber}}/{{productCode}}
+Accept: {{json}}

@@ -1,0 +1,96 @@
+### Variables
+@host = http://localhost:9090
+@base = /api/v1/customers
+@json = application/json
+@id = 123456
+@id2 = 2049344299
+
+### Find all customers (paged)
+GET {{host}}{{base}}/find-all-paged?page=0&size=20&sort=customerName&dir=asc
+Accept: {{json}}
+
+### Find all customers
+GET {{host}}{{base}}
+Accept: {{json}}
+
+### Find customer by ID
+GET {{host}}{{base}}/{{id}}
+Accept: {{json}}
+
+### Create new customer
+POST {{host}}{{base}}
+Content-Type: {{json}}
+
+{
+  "customerName": "ACME A/S",
+  "contactLastName": "Doe",
+  "contactFirstName": "John",
+  "phone": "+45 12 34 56 78",
+  "addressLine1": "Main Street 1",
+  "addressLine2": null,
+  "city": "Copenhagen",
+  "state": null,
+  "postalCode": "2100",
+  "country": "Denmark",
+  "salesRepEmployeeNumber": 1002,
+  "creditLimit": 15000.00
+}
+
+### Update existing customer
+PUT {{host}}{{base}}/{{id2}}
+Content-Type: {{json}}
+
+{
+  "customerName": "ACME A/S (Updated)",
+  "contactLastName": "Doe",
+  "contactFirstName": "Jane",
+  "phone": "+45 98 76 54 32",
+  "addressLine1": "Updated Street 2",
+  "addressLine2": null,
+  "city": "Aarhus",
+  "state": null,
+  "postalCode": "8000",
+  "country": "Denmark",
+  "salesRepEmployeeNumber": 1002,
+  "creditLimit": 20000.00
+}
+
+### Create customers in bulk (accepted)
+POST {{host}}{{base}}/bulk
+Content-Type: {{json}}
+
+[
+  {
+    "customerName": "Globex ApS",
+    "contactLastName": "Nielsen",
+    "contactFirstName": "Anna",
+    "phone": "+45 11 22 33 44",
+    "addressLine1": "Harbor Road 5",
+    "addressLine2": null,
+    "city": "Odense",
+    "state": null,
+    "postalCode": "5000",
+    "country": "Denmark",
+    "salesRepEmployeeNumber": 1002,
+    "creditLimit": 12000.00
+  },
+  {
+    "customerName": "Initech A/S",
+    "contactLastName": "Larsen",
+    "contactFirstName": "Mads",
+    "phone": "+45 22 33 44 55",
+    "addressLine1": "Tech Park 8",
+    "addressLine2": "Building B",
+    "city": "Aalborg",
+    "state": null,
+    "postalCode": "9000",
+    "country": "Denmark",
+    "salesRepEmployeeNumber": 1002,
+    "creditLimit": 18000.00
+  }
+]
+
+### Delete customer
+DELETE {{host}}{{base}}/{{id}}
+Accept: {{json}}
+

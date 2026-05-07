@@ -1,0 +1,15 @@
+### Variables
+@host = http://localhost:1111
+@base = /api/customers/custom
+@json = application/json
+@country = Denmark
+@credit = 100
+
+
+### Find customers by country
+GET {{host}}{{base}}/by-country/{{country}}
+Accept: {{json}}
+
+### Find customers by credit limit 
+GET {{host}}{{base}}/by-credit/{{credit}}
+Accept: {{json}}

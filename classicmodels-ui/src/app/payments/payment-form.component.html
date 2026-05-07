@@ -1,0 +1,33 @@
+<h2>{{isEdit ? 'Edit' : 'New'}} Payment</h2>
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-form-field>
+    <mat-label>Customer Number</mat-label>
+    <input matInput type="number" formControlName="customerNumber" required [readonly]="isEdit" />
+    @if (form.controls.customerNumber.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Check Number</mat-label>
+    <input matInput formControlName="checkNumber" required [readonly]="isEdit" />
+    @if (form.controls.checkNumber.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Payment Date</mat-label>
+    <input matInput formControlName="paymentDate" required />
+    @if (form.controls.paymentDate.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Amount</mat-label>
+    <input matInput type="number" formControlName="amount" required />
+    @if (form.controls.amount.invalid) {
+      <mat-error>Required</mat-error>
+    }
+  </mat-form-field>
+  <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Save</button>
+  <a mat-button routerLink="../">Cancel</a>
+</form>

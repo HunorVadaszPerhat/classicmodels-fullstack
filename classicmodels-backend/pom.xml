@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.13</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>org.springprep</groupId>
+    <artifactId>classicmodels-backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>classicmodels-backend</name>
+    <description>classicmodels-backend</description>
+    <url/>
+    <licenses>
+        <license/>
+    </licenses>
+    <developers>
+        <developer/>
+    </developers>
+    <scm>
+        <connection/>
+        <developerConnection/>
+        <tag/>
+        <url/>
+    </scm>
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.6.15</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!--
+            Spring AOP starter. Brings in:
+              - org.springframework:spring-aop  (the proxy / advisor infra)
+              - org.aspectj:aspectjweaver       (annotations + pointcut parser)
+            Spring Boot's AopAutoConfiguration auto-detects these on the
+            classpath and turns on @EnableAspectJAutoProxy without needing
+            to add it manually. After this, classes annotated with @Aspect
+            and @Around start working with no further wiring.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <!--
+            Spring Security. Brings in spring-security-core, spring-security-web
+            and spring-security-config. As soon as this is on the classpath,
+            Spring Boot's auto-configuration enables the filter chain and a
+            default user gets generated at startup (with a random password
+            logged to the console). Our SecurityConfig will replace that
+            default with explicit rules.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!--
+            OAuth2 client starter (Feature 15). Pulls in
+            spring-security-oauth2-client and spring-security-oauth2-jose
+            so we can do the full authorization-code flow against any
+            standard OIDC provider (Google, GitHub, Keycloak…).
+
+            Auto-config is conditional: if no client registrations are
+            present in application.yml (i.e. GOOGLE_CLIENT_ID is unset),
+            the OAuth2-related beans simply aren't created and the app
+            starts normally with only username/password login enabled.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        <!--
+            Spring Boot Actuator (Feature 16). Exposes operational
+            endpoints under /actuator/* — health, info, metrics, env,
+            mappings, threaddump, beans, loggers, etc. Auto-configures
+            its own filter chain; we control which endpoints are
+            exposed via management.endpoints.web.exposure.* in YAML.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!--
+            Micrometer's Prometheus registry. With this on the classpath,
+            Actuator exposes /actuator/prometheus in the text format that
+            Prometheus servers scrape. Without it, /actuator/metrics still
+            works (JSON), but Prometheus integration doesn't.
+        -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!--
+            WebSocket + STOMP messaging starter. Brings in Tomcat's
+            websocket support + Spring's STOMP message broker. After
+            this, classes annotated @MessageMapping can handle STOMP
+            frames, and SimpMessagingTemplate can push events to topics.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <!--
+            JJWT (Java JWT). Three artifacts:
+              - jjwt-api    : the public API (interfaces, builders)
+              - jjwt-impl   : the runtime (signing/parsing impls)
+              - jjwt-jackson: the JSON serializer (Jackson is already on
+                              our classpath via spring-web)
+            The split lets you replace impl/jackson without touching code
+            against the api. Versions are aligned because they share a
+            BOM, but for safety we pin them.
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!--
+            Flyway: schema migration tool. On every application startup it
+            inspects the `flyway_schema_history` table and runs any new
+            migrations (V<N>__<name>.sql) it finds on the classpath under
+            `db/migration` in version order. Each migration is recorded so
+            the next startup is a no-op until a new file is added.
+
+            Best practice: NEVER edit a migration that has already been
+            applied to a shared environment. Add a new V<N+1> file instead.
+            Flyway protects you by storing a checksum of every applied
+            file; editing one will fail the next startup with a clear error.
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <!--
+            Flyway 10+ split the database-specific code into separate
+            modules. flyway-mysql provides the MySQL/MariaDB dialect.
+            Without it, Flyway will refuse to run against MySQL.
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.5.5.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-docker-compose</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Testcontainers for spinning up real databases in Docker for tests -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.5.5.Final</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <source>21</source>
+                    <compilerArgs>--enable-preview</compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <!-- Failsafe plugin to run files ending in *IT.java during the integration-test phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

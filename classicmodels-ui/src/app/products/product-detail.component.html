@@ -1,0 +1,15 @@
+<a routerLink="../">Back</a>
+@if (product()) {
+  <mat-card>
+    <mat-card-title>{{product()!.productName}}</mat-card-title>
+    <mat-card-content>
+      <pre>{{ product() | json }}</pre>
+    </mat-card-content>
+  </mat-card>
+}
+@if (loading()) {
+  <div>Loading...</div>
+}
+@if (error()) {
+  <div>Error: {{ error() }}</div>
+}

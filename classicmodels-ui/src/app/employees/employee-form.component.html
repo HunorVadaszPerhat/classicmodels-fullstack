@@ -1,0 +1,187 @@
+<a routerLink="../" class="back-link">
+  <mat-icon>arrow_back</mat-icon>
+  Back to employees
+</a>
+
+@if (loading()) {
+  <div class="loading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Loading…</span>
+  </div>
+}
+
+@if (!loading()) {
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>
+        {{ isEdit() ? 'Edit' : 'New' }} employee
+      </mat-card-title>
+      @if (isEdit()) {
+        <mat-card-subtitle>#{{ id() }}</mat-card-subtitle>
+      }
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (error()) {
+        <div class="error-banner">{{ error() }}</div>
+      }
+
+      <!--
+        Photo + upload button. Only visible in edit mode — for a
+        brand-new employee we don't have an id yet, so there's nowhere
+        to upload to. The user creates first, then can add a photo on
+        a follow-up edit.
+
+        The hidden file input is triggered by clicking its label
+        (which also wraps the button). This is the standard pattern
+        for "make a button look pretty while still using the native
+        file picker" — a styled <input type="file"> is a pain.
+      -->
+      @if (id(); as eid) {
+        <div class="photo-row">
+          <!--
+            Using `as eid` here both narrows the type (so [employeeId]
+            doesn't need a non-null assertion) and gives us a stable
+            local name. The block only renders when id() is truthy,
+            which on the edit route is "always after data loads."
+          -->
+          <app-employee-photo
+            [employeeId]="eid"
+            alt="Profile photo"
+            [deletable]="true"
+            style="--photo-size: 80px;">
+          </app-employee-photo>
+          <div class="photo-controls">
+            <!--
+              The hidden file input is triggered programmatically by
+              clicking the styled button. This is the standard pattern
+              for "use the native file picker without an ugly input".
+              {@code #fileInput} is an Angular template reference variable
+              — gives us a handle to the DOM node from the button's click.
+            -->
+            <input #fileInput type="file"
+                   accept="image/jpeg,image/png"
+                   hidden
+                   (change)="onPhotoSelected($event)" />
+            <button mat-stroked-button type="button"
+                    [disabled]="uploadingPhoto()"
+                    (click)="fileInput.click()">
+              <mat-icon>cloud_upload</mat-icon>
+              {{ uploadingPhoto() ? 'Uploading…' : 'Upload photo' }}
+            </button>
+            <small class="photo-hint">JPEG or PNG, up to 5MB.</small>
+          </div>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <!-- Identity -->
+        <section>
+          <h3>Identity</h3>
+          <div class="row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>First name</mat-label>
+              <input matInput formControlName="firstName" autocomplete="given-name" required />
+              @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+                <mat-error>First name is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Last name</mat-label>
+              <input matInput formControlName="lastName" autocomplete="family-name" required />
+              @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+                <mat-error>Last name is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </section>
+
+        <!-- Contact -->
+        <section>
+          <h3>Contact</h3>
+          <div class="row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" autocomplete="email" required />
+              @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+                <mat-error>Email is required</mat-error>
+              }
+              @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+                <mat-error>Enter a valid email address</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Extension</mat-label>
+              <input matInput formControlName="extension" required />
+              <mat-hint>Internal phone, e.g. x5800</mat-hint>
+              @if (form.controls.extension.touched && form.controls.extension.invalid) {
+                <mat-error>Extension is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </section>
+
+        <!-- Role & reporting -->
+        <section>
+          <h3>Role &amp; reporting</h3>
+          <div class="row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Job title</mat-label>
+              <input matInput formControlName="jobTitle" required />
+              @if (form.controls.jobTitle.touched && form.controls.jobTitle.invalid) {
+                <mat-error>Job title is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Office</mat-label>
+              <mat-select formControlName="officeCode" required>
+                @for (o of offices_(); track o.officeCode) {
+                  <mat-option [value]="o.officeCode">
+                    {{ o.city }}@if (o.state) {, {{ o.state }}} ·
+                    {{ o.country }}
+                    <span style="color: rgba(0,0,0,0.45)">(code {{ o.officeCode }})</span>
+                  </mat-option>
+                }
+              </mat-select>
+              @if (form.controls.officeCode.touched && form.controls.officeCode.invalid) {
+                <mat-error>Office is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="row single">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Reports to</mat-label>
+              <mat-select formControlName="reportsTo">
+                <mat-option [value]="null">— None (top of org chart)</mat-option>
+                @for (m of managers(); track m.employeeNumber) {
+                  <mat-option [value]="m.employeeNumber">
+                    {{ m.firstName }} {{ m.lastName }}
+                    <span style="color: rgba(0,0,0,0.45)">— {{ m.jobTitle }}</span>
+                  </mat-option>
+                }
+              </mat-select>
+              <mat-hint>The person this employee directly reports to</mat-hint>
+            </mat-form-field>
+          </div>
+        </section>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <a mat-button routerLink="../">Cancel</a>
+      <button mat-flat-button color="primary"
+              type="button"
+              [disabled]="form.invalid || saving()"
+              (click)="save()">
+        @if (saving()) {
+          <mat-spinner diameter="18" style="display: inline-block; margin-right: 0.5rem;"></mat-spinner>
+        }
+        {{ isEdit() ? 'Save changes' : 'Create employee' }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}

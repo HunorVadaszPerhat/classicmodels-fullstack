@@ -1,0 +1,78 @@
+### Variables
+@host = http://localhost:9090
+@base = /api/v1/offices
+@json = application/json
+@code = ABC123DEFG
+
+### Find all offices (paged)
+GET {{host}}{{base}}/find-all-paged?page=0&size=20&sort=officeCode&dir=asc
+Accept: {{json}}
+
+### Find all offices
+GET {{host}}{{base}}
+Accept: {{json}}
+
+### Find office by code
+GET {{host}}{{base}}/{{code}}
+Accept: {{json}}
+
+### Create new office
+POST {{host}}{{base}}
+Content-Type: {{json}}
+
+{
+  "city": "Copenhagen",
+  "phone": "+45 99999999",
+  "addressLine1": "Egg St 1",
+  "addressLine2": "Floor 2",
+  "state": "Capital",
+  "country": "Denmark",
+  "postalCode": "1000",
+  "territory": "EU"
+}
+
+### Update existing office
+PUT {{host}}{{base}}/{{code}}
+Content-Type: {{json}}
+
+{
+  "city": "Aarhus",
+  "phone": "+45 88888888",
+  "addressLine1": "Updated St 2",
+  "addressLine2": null,
+  "state": null,
+  "country": "Denmark",
+  "postalCode": "8000",
+  "territory": "EU"
+}
+
+### Create offices in bulk (accepted)
+POST {{host}}{{base}}/bulk
+Content-Type: {{json}}
+
+[
+  {
+    "city": "Odense",
+    "phone": "+45 77777777",
+    "addressLine1": "Harbor Rd 5",
+    "addressLine2": null,
+    "state": null,
+    "country": "Denmark",
+    "postalCode": "5000",
+    "territory": "EU"
+  },
+  {
+    "city": "Aalborg",
+    "phone": "+45 66666666",
+    "addressLine1": "Tech Park 8",
+    "addressLine2": "Building B",
+    "state": null,
+    "country": "Denmark",
+    "postalCode": "9000",
+    "territory": "EU"
+  }
+]
+
+### Delete office
+DELETE {{host}}{{base}}/{{code}}
+Accept: {{json}}

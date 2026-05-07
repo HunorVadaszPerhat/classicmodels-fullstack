@@ -1,0 +1,153 @@
+<a routerLink="../" class="back-link">
+  <mat-icon>arrow_back</mat-icon>
+  Back to employees
+</a>
+
+@if (loading()) {
+  <div class="loading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Loading employee…</span>
+  </div>
+}
+
+@if (error()) {
+  <mat-card class="error-card">
+    <mat-card-content>
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      {{ error() }}
+    </mat-card-content>
+  </mat-card>
+}
+
+@if (employee(); as e) {
+  <mat-card class="detail-card">
+    <!--
+      Custom header layout instead of mat-card-header + mat-card-avatar.
+      Material's built-in avatar slot is 40×40, but our photo renders
+      at 96px — so as a card avatar it overflows the slot and bleeds
+      over the title. With a hand-rolled flex row the photo gets its
+      own dedicated column and we control the sizing.
+    -->
+    <div class="card-head">
+      <app-employee-photo
+        class="card-photo"
+        [employeeId]="e.employeeNumber!"
+        [alt]="e.firstName + ' ' + e.lastName">
+      </app-employee-photo>
+
+      <div class="card-head-text">
+        <div class="title-row">
+          <span class="card-title">{{ e.firstName }} {{ e.lastName }}</span>
+          @if (!e.active) {
+            <mat-chip class="status-chip terminated">Terminated</mat-chip>
+          } @else {
+            <mat-chip class="status-chip active">Active</mat-chip>
+          }
+        </div>
+        <div class="card-subtitle">
+          {{ e.jobTitle }} · #{{ e.employeeNumber }}
+        </div>
+      </div>
+    </div>
+
+    <mat-card-content>
+      <!--
+        Definition list. Semantically appropriate for "field name → value"
+        data, and visually it's a clean two-column layout via the SCSS grid.
+      -->
+      <dl class="fields">
+
+        <dt><mat-icon>email</mat-icon> Email</dt>
+        <dd>
+          <a [href]="'mailto:' + e.email">{{ e.email }}</a>
+        </dd>
+
+        <dt><mat-icon>call</mat-icon> Extension</dt>
+        <dd>{{ e.extension }}</dd>
+
+        <dt><mat-icon>business</mat-icon> Office</dt>
+        <dd>
+          @if (office(); as o) {
+            <a [routerLink]="['/offices', e.officeCode]">
+              {{ o.city }}@if (o.state) {, {{ o.state }}} ·
+              {{ o.country }}
+            </a>
+            <span class="muted office-code">(code {{ e.officeCode }})</span>
+
+            <!--
+              Only render the map if the office has coordinates. The
+              Flyway V3 migration backfilled them for the seven seed
+              offices; any future office added without geocoding shows
+              the address but no map.
+            -->
+            @if (o.lat != null && o.lng != null) {
+              <div class="map-wrap">
+                <!--
+                  buildOfficePopup() returns an HTML string; it lives in
+                  the component class so we can use the escapeHtml helper.
+                  Angular evaluates the expression on every change-detection
+                  pass, but the map component only re-binds the popup when
+                  the input value actually changes (see ngOnChanges).
+                -->
+                <app-mini-map
+                  [lat]="o.lat"
+                  [lng]="o.lng"
+                  [popupHtml]="buildOfficePopup(o)">
+                </app-mini-map>
+              </div>
+            }
+          } @else if (office() === null) {
+            <span class="muted">code {{ e.officeCode }} (couldn't resolve office)</span>
+          } @else {
+            <span class="muted">resolving…</span>
+          }
+        </dd>
+
+        <dt><mat-icon>supervisor_account</mat-icon> Reports to</dt>
+        <dd>
+          @if (manager(); as m) {
+            <a [routerLink]="['/employees', m.employeeNumber]">
+              {{ m.firstName }} {{ m.lastName }}
+            </a>
+            <span class="muted">({{ m.jobTitle }})</span>
+          } @else if (e.reportsTo == null) {
+            <span class="muted">— top of org chart</span>
+          } @else if (manager() === null) {
+            <span class="muted">#{{ e.reportsTo }} (couldn't resolve manager)</span>
+          } @else {
+            <span class="muted">resolving…</span>
+          }
+        </dd>
+
+        @if (!e.active && e.terminatedDate) {
+          <dt><mat-icon>event_busy</mat-icon> Terminated on</dt>
+          <dd>{{ e.terminatedDate }}</dd>
+        }
+      </dl>
+
+      <!--
+        Audit footer. Renders only if the API returned audit fields
+        (older clients calling pre-V4 servers wouldn't see them).
+        The 'medium' date pipe gives "May 6, 2026, 2:09 PM"-style output.
+      -->
+      @if (e.createdAt || e.updatedAt) {
+        <div class="audit-footer">
+          @if (e.createdAt) {
+            <span>Created by <strong>{{ e.createdBy ?? 'unknown' }}</strong>
+            on {{ e.createdAt | date:'medium' }}</span>
+          }
+          @if (e.updatedAt && e.updatedAt !== e.createdAt) {
+            <span> · Last updated by <strong>{{ e.updatedBy ?? 'unknown' }}</strong>
+            on {{ e.updatedAt | date:'medium' }}</span>
+          }
+        </div>
+      }
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <a mat-stroked-button [routerLink]="['../', e.employeeNumber, 'edit']">
+        <mat-icon>edit</mat-icon> Edit
+      </a>
+    </mat-card-actions>
+  </mat-card>
+}

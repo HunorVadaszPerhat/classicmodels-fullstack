@@ -1,0 +1,8 @@
+{
+  "files.exclude": {
+    "**/.angular": true
+  },
+  "files.watcherExclude": {
+    "**/.angular/**": true
+  }
+}

@@ -1,0 +1,70 @@
+### Variables
+@host = http://localhost:9090
+@base = /api/v1/orders
+@json = application/json
+@id = 123456
+
+### Find all orders (paged)
+GET {{host}}{{base}}/find-all-paged?page=0&size=20&sort=orderDate&dir=asc
+Accept: {{json}}
+
+### Find all orders
+GET {{host}}{{base}}
+Accept: {{json}}
+
+### Find order by ID
+GET {{host}}{{base}}/{{id}}
+Accept: {{json}}
+
+### Create new order
+POST {{host}}{{base}}
+Content-Type: {{json}}
+
+{
+  "orderDate": "2025-08-01",
+  "requiredDate": "2025-08-09",
+  "shippedDate": null,
+  "status": "In Process",
+  "comments": "New order created",
+  "customerNumber": 103
+}
+
+### Update existing order
+PUT {{host}}{{base}}/{{id}}
+Content-Type: {{json}}
+
+{
+  "orderDate": "2025-08-01",
+  "requiredDate": "2025-08-12",
+  "shippedDate": null,
+  "status": "In Process",
+  "comments": "Changed status",
+  "customerNumber": 103
+}
+
+### Create orders in bulk (accepted)
+POST {{host}}{{base}}/bulk
+Content-Type: {{json}}
+
+[
+  {
+    "orderDate": "2025-08-02",
+    "requiredDate": "2025-08-10",
+    "shippedDate": null,
+    "status": "In Process",
+    "comments": "First bulk order",
+    "customerNumber": 112
+  },
+  {
+    "orderDate": "2025-08-03",
+    "requiredDate": "2025-08-13",
+    "shippedDate": null,
+    "status": "On Hold",
+    "comments": "Second bulk order",
+    "customerNumber": 119
+  }
+]
+
+### Delete order
+DELETE {{host}}{{base}}/{{id}}
+Accept: {{json}}
