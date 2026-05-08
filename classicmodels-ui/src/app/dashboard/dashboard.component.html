@@ -59,6 +59,31 @@
         </div>
         <div class="kpi-value">{{ formatNumber(d.activeCustomers) }}</div>
       </mat-card>
+
+      <!--
+        Credit-alerts tile (C13). Highlighted as a warning when there
+        ARE alerts; muted-grey when zero. Whole card is clickable and
+        navigates to the alerts list page so users land on the
+        actionable view in one click.
+      -->
+      <a class="kpi-link"
+         routerLink="/customers/credit-alerts"
+         [class.muted]="(d.creditAlerts.overLimitCount + d.creditAlerts.nearLimitCount) === 0">
+        <mat-card class="kpi-card kpi-alerts"
+                  [class.has-alerts]="(d.creditAlerts.overLimitCount + d.creditAlerts.nearLimitCount) > 0">
+          <div class="kpi-label">
+            <mat-icon>warning_amber</mat-icon>
+            Credit alerts
+          </div>
+          <div class="kpi-value">
+            {{ formatNumber(d.creditAlerts.overLimitCount + d.creditAlerts.nearLimitCount) }}
+          </div>
+          <div class="kpi-sub">
+            <strong>{{ d.creditAlerts.overLimitCount }}</strong> over ·
+            <strong>{{ d.creditAlerts.nearLimitCount }}</strong> near
+          </div>
+        </mat-card>
+      </a>
     </div>
 
     <!--
@@ -92,6 +117,13 @@
         <div class="chart-title">Orders by status</div>
         <div class="chart-canvas-wrap">
           <canvas #ordersByStatusCanvas></canvas>
+        </div>
+      </mat-card>
+
+      <mat-card class="chart-card">
+        <div class="chart-title">Top 10 countries by revenue (click a bar to see customers)</div>
+        <div class="chart-canvas-wrap">
+          <canvas #revenueByCountryCanvas></canvas>
         </div>
       </mat-card>
     </div>

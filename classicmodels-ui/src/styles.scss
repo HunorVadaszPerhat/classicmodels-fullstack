@@ -37,3 +37,29 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* ---------------------------------------------------------------
+   Customer-map marker classes (C10).
+
+   These are GLOBAL (not in customer-map.component.ts's styles
+   array) because Leaflet renders divIcons outside Angular's
+   component tree — component-scoped CSS doesn't reach them.
+
+   The shape: a flat circular dot with a thin white ring,
+   centred at the marker's lat/lng. Two colours encode "has
+   sales rep" (default blue) vs "no sales rep, territory gap"
+   (orange). Same colour set is reused in the legend's dots.
+--------------------------------------------------------------- */
+.customer-marker-assigned,
+.customer-marker-unassigned {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  /* Subtle outer ring so the dot reads against tiles of any colour. */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.customer-marker-assigned   { background: #1976d2; } /* MD blue 700 */
+.customer-marker-unassigned { background: #f57c00; } /* MD orange 700 */
+

@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 
 import org.springframework.stereotype.Repository;
 
+import com.hunor.classicmodelsbackend.dto.dashboard.SalesDashboardDTO.CountryRevenue;
 import com.hunor.classicmodelsbackend.dto.dashboard.SalesDashboardDTO.CustomerRevenue;
 import com.hunor.classicmodelsbackend.dto.dashboard.SalesDashboardDTO.MonthlyRevenue;
 import com.hunor.classicmodelsbackend.dto.dashboard.SalesDashboardDTO.ProductLineRevenue;
@@ -183,6 +184,48 @@ public class DashboardRepository {
      * so iteration order is stable across requests, which matters for
      * the doughnut chart's legend ordering on the frontend.
      */
+    /**
+     * Revenue + customer count grouped by country (C14). Used by the
+     * dashboard's geographic breakdown chart and as the link target
+     * for "drill into customers in this country."
+     *
+     * <p>Filters out inactive customers (the same {@code WHERE active = 1}
+     * filter used everywhere else) so terminated customers don't
+     * contribute to a country's apparent revenue. Groups by country
+     * literal (NOT by region) — the customer-table column is the
+     * authoritative source for "where is this customer." Region-level
+     * grouping (Europe, APAC, etc.) is application-layer logic; could
+     * be added on top of this query if a follow-on feature wanted it.</p>
+     */
+    public List<CountryRevenue> revenueByCountry() {
+        final String sql = """
+            SELECT c.country,
+                   SUM(od.quantityOrdered * od.priceEach) AS revenue,
+                   COUNT(DISTINCT c.customerNumber)        AS customerCount
+              FROM customers c
+              JOIN orders o      ON o.customerNumber = c.customerNumber
+              JOIN orderdetails od ON od.orderNumber  = o.orderNumber
+             WHERE c.active = 1
+             GROUP BY c.country
+             ORDER BY revenue DESC
+            """;
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            List<CountryRevenue> out = new ArrayList<>();
+            while (rs.next()) {
+                out.add(new CountryRevenue(
+                        rs.getString("country"),
+                        rs.getBigDecimal("revenue"),
+                        rs.getLong("customerCount")));
+            }
+            return out;
+        } catch (SQLException e) {
+            throw new RuntimeException("revenueByCountry failed", e);
+        }
+    }
+
     public Map<String, Long> ordersByStatus() {
         final String sql = """
             SELECT status, COUNT(*) AS cnt

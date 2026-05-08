@@ -42,7 +42,7 @@ public class OrderService {
     }
 
     @CachePut(cacheNames = "orders", key = "#result.orderNumber()")
-    @CacheEvict(cacheNames = "ordersAll", allEntries = true)
+    @CacheEvict(cacheNames = {"ordersAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public OrderResponseDTO create(OrderRequestDTO dto) {
         customerRepo.findById(dto.customerNumber())
                 .orElseThrow(() -> new RuntimeException("Customer " + dto.customerNumber() + " not found"));
@@ -52,7 +52,7 @@ public class OrderService {
     }
 
     @CachePut(cacheNames = "orders", key = "#id")
-    @CacheEvict(cacheNames = "ordersAll", allEntries = true)
+    @CacheEvict(cacheNames = {"ordersAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public OrderResponseDTO update(int id, OrderRequestDTO dto) {
         var existing = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order " + id + " not found"));
@@ -66,7 +66,7 @@ public class OrderService {
         return mapper.toResponseDTO(existing);
     }
 
-    @CacheEvict(cacheNames = {"orders", "ordersAll"}, allEntries = true)
+    @CacheEvict(cacheNames = {"orders", "ordersAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public void delete(int id) {
         repo.findById(id).orElseThrow(() -> new RuntimeException("Order " + id + " not found"));
         repo.delete(id);
@@ -80,7 +80,7 @@ public class OrderService {
         return new PageResponse<>(items, page, size, total, totalPages);
     }
 
-    @CacheEvict(cacheNames = "ordersAll", allEntries = true)
+    @CacheEvict(cacheNames = {"ordersAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public void createBulk(List<OrderRequestDTO> dtos) {
 
         dtos.stream().map(OrderRequestDTO::customerNumber).distinct().forEach(cid ->

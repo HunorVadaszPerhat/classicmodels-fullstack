@@ -43,7 +43,7 @@ public class PaymentService {
     }
 
     @CachePut(cacheNames = "payments", key = "{#result.customerNumber(), #result.checkNumber()}")
-    @CacheEvict(cacheNames = "paymentsAll", allEntries = true)
+    @CacheEvict(cacheNames = {"paymentsAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public PaymentResponseDTO create(PaymentRequestDTO dto) {
         customerRepo.findById(dto.customerNumber())
                 .orElseThrow(() -> new RuntimeException("Customer " + dto.customerNumber() + " not found"));
@@ -53,7 +53,7 @@ public class PaymentService {
     }
 
     @CachePut(cacheNames = "payments", key = "{#customerNumber, #checkNumber}")
-    @CacheEvict(cacheNames = "paymentsAll", allEntries = true)
+    @CacheEvict(cacheNames = {"paymentsAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public PaymentResponseDTO update(int customerNumber, String checkNumber, PaymentRequestDTO dto) {
         var existing = repo.findById(customerNumber, checkNumber)
                 .orElseThrow(() -> new RuntimeException(
@@ -67,7 +67,7 @@ public class PaymentService {
         return mapper.toResponseDTO(existing);
     }
 
-    @CacheEvict(cacheNames = {"payments", "paymentsAll"}, allEntries = true)
+    @CacheEvict(cacheNames = {"payments", "paymentsAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public void delete(int customerNumber, String checkNumber) {
         repo.findById(customerNumber, checkNumber)
                 .orElseThrow(() -> new RuntimeException(
@@ -83,7 +83,7 @@ public class PaymentService {
         return new PageResponse<>(items, page, size, total, totalPages);
     }
 
-    @CacheEvict(cacheNames = "paymentsAll", allEntries = true)
+    @CacheEvict(cacheNames = {"paymentsAll", "customerActivity", "customerCreditStatus", "customerCreditAlerts", "customerCreditAlertCounts"}, allEntries = true)
     public void createBulk(List<PaymentRequestDTO> dtos) {
         dtos.stream().map(PaymentRequestDTO::customerNumber).distinct().forEach(cid ->
                 customerRepo.findById(cid).orElseThrow(() -> new RuntimeException("Customer " + cid + " not found"))

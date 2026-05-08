@@ -1,33 +1,225 @@
-<a routerLink="../">Back</a>
-@if (customer(); as customer) {
-  <mat-card>
-    <mat-card-title>{{ customer.customerName }}</mat-card-title>
+<a routerLink="../" class="back-link">
+  <mat-icon>arrow_back</mat-icon> Back to customers
+</a>
+
+@if (loading() && !customer()) {
+  <div class="loading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Loading customer…</span>
+  </div>
+}
+
+@if (error()) {
+  <mat-card class="detail-card error-card">
     <mat-card-content>
-      <div><strong>Customer Number:</strong> {{ customer.customerNumber }}</div>
-      <div><strong>Customer Name:</strong> {{ customer.customerName }}</div>
-      <div><strong>ContactComponent Last Name:</strong> {{ customer.contactLastName }}</div>
-      <div><strong>ContactComponent First Name:</strong> {{ customer.contactFirstName }}</div>
-      <div><strong>Phone:</strong> {{ customer.phone }}</div>
-      <div><strong>Address Line 1:</strong> {{ customer.addressLine1 }}</div>
-      <div><strong>Address Line 2:</strong> {{ customer.addressLine2 || '-' }}</div>
-      <div><strong>City:</strong> {{ customer.city }}</div>
-      <div><strong>State:</strong> {{ customer.state || '-' }}</div>
-      <div><strong>Postal Code:</strong> {{ customer.postalCode || '-' }}</div>
-      <div><strong>Country:</strong> {{ customer.country }}</div>
-      <div><strong>Sales Rep Employee Number:</strong> {{ customer.salesRepEmployeeNumber ?? '-' }}</div>
-      <div><strong>Credit Limit:</strong> {{ customer.creditLimit ?? '-' }}</div>
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      {{ error() }}
     </mat-card-content>
-    <mat-card-actions>
-      <a mat-stroked-button color="primary" [routerLink]="['lifetime-value']">
-        <mat-icon>insights</mat-icon>
-        View lifetime value
-      </a>
-    </mat-card-actions>
   </mat-card>
 }
-@if (loading()) {
-  <div>Loading...</div>
-}
-@if (error()) {
-  <div>Error: {{ error() }}</div>
+
+@if (customer(); as c) {
+  <mat-card class="detail-card">
+    <!--
+      Header: name + customer number + quick-action buttons.
+      The buttons live up here (instead of in mat-card-actions at the
+      bottom) so they're visible without scrolling on small screens.
+    -->
+    <div class="card-head">
+      <div class="card-head-text">
+        <h2 class="card-title">{{ c.customerName }}</h2>
+        <div class="card-subtitle">
+          <span>Customer #{{ c.customerNumber }}</span>
+          <mat-chip-set>
+            <!--
+              Status chip first — viewers should see "this is a soft-deleted
+              customer" before any other context. Country chip stays for
+              quick geographic identification.
+            -->
+            @if (c.active === false) {
+              <mat-chip class="status-chip inactive">Inactive</mat-chip>
+            }
+            @if (c.country) {
+              <mat-chip>{{ c.country }}</mat-chip>
+            }
+          </mat-chip-set>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <a mat-stroked-button [routerLink]="['../', c.customerNumber, 'edit']">
+          <mat-icon>edit</mat-icon> Edit
+        </a>
+        <a mat-stroked-button
+           [routerLink]="['../', c.customerNumber, 'activity']">
+          <mat-icon>history</mat-icon> Activity
+        </a>
+        <a mat-stroked-button
+           [routerLink]="['../', c.customerNumber, 'merge']">
+          <mat-icon>merge</mat-icon> Find duplicates
+        </a>
+        <a mat-stroked-button color="primary"
+           [routerLink]="['../', c.customerNumber, 'lifetime-value']">
+          <mat-icon>insights</mat-icon> Lifetime value
+        </a>
+      </div>
+    </div>
+
+    <!-- Contact info -->
+    <div class="section">
+      <h3>Contact</h3>
+      <dl class="fields">
+        <dt><mat-icon>person</mat-icon> Contact</dt>
+        <dd>{{ c.contactFirstName }} {{ c.contactLastName }}</dd>
+
+        <dt><mat-icon>call</mat-icon> Phone</dt>
+        <dd>{{ c.phone || '—' }}</dd>
+      </dl>
+    </div>
+
+    <!-- Address — multi-line block, formatted in the component -->
+    <div class="section">
+      <h3>Address</h3>
+      <dl class="fields">
+        <dt><mat-icon>location_on</mat-icon> Address</dt>
+        <dd>
+          <span class="address-block">
+            @for (line of addressLines(); track $index) {
+              {{ line }}<br>
+            }
+          </span>
+
+          <!--
+            Map block. Three render states:
+              1. Coordinates present → render mini-map.
+              2. No coordinates yet → empty-state hint.
+              3. (geocoding in flight is handled by the button's disabled state)
+
+            The Geocode button is always rendered (so users can re-geocode
+            after an address change) but lives outside the @if so its
+            placement doesn't shift when the map appears.
+          -->
+          @if (coords(); as c) {
+            <div class="map-wrap">
+              <app-mini-map
+                [lat]="c.lat"
+                [lng]="c.lng"
+                [popupHtml]="popupHtml() ?? ''"
+                [zoom]="13">
+              </app-mini-map>
+            </div>
+          } @else {
+            <div class="map-empty">
+              No coordinates stored. Click <strong>Geocode address</strong> to
+              look up this customer's location.
+            </div>
+          }
+
+          <div style="margin-top: 0.6rem;">
+            <button mat-stroked-button
+                    type="button"
+                    [disabled]="geocoding()"
+                    (click)="runGeocode()">
+              @if (geocoding()) {
+                <mat-spinner diameter="16" style="display: inline-block; margin-right: 0.4rem;"></mat-spinner>
+              } @else {
+                <mat-icon>my_location</mat-icon>
+              }
+              {{ geocoding() ? 'Geocoding…' : (coords() ? 'Re-geocode address' : 'Geocode address') }}
+            </button>
+          </div>
+
+          @if (geocodeMessage(); as msg) {
+            <div class="geocode-status" [class.error]="geocodeError()">{{ msg }}</div>
+          }
+        </dd>
+      </dl>
+    </div>
+
+    <!--
+      Account: sales rep (resolved to employee link), credit limit.
+      Sales rep has three render states:
+        1. No salesRepEmployeeNumber on the customer            → "Unassigned"
+        2. salesRep() === null  (lookup failed / employee gone)  → raw id + "couldn't resolve"
+        3. salesRep() === Employee instance                      → name + job title + clickable link
+    -->
+    <div class="section">
+      <h3>Account</h3>
+      <dl class="fields">
+        <dt><mat-icon>support_agent</mat-icon> Sales rep</dt>
+        <dd>
+          @if (!c.salesRepEmployeeNumber) {
+            <span class="muted">Unassigned</span>
+          } @else if (salesRep(); as rep) {
+            <a class="rep-link"
+               [routerLink]="['/employees', rep.employeeNumber]">
+              {{ rep.firstName }} {{ rep.lastName }}
+            </a>
+            <span class="rep-title"> — {{ rep.jobTitle }}</span>
+          } @else if (salesRep() === null) {
+            <span>Employee #{{ c.salesRepEmployeeNumber }}</span>
+            <span class="muted">(couldn't resolve)</span>
+          } @else {
+            <span class="muted">Loading…</span>
+          }
+        </dd>
+
+        <dt><mat-icon>credit_card</mat-icon> Credit limit</dt>
+        <dd class="money">
+          {{ formatMoney(c.creditLimit) }}
+          @if (creditStatus(); as cs) {
+            @switch (cs.status) {
+              @case ('NEAR_LIMIT') {
+                <span class="credit-chip near">
+                  <mat-icon>warning</mat-icon>
+                  Near limit · {{ formatUtilization(cs.utilization) }}
+                </span>
+              }
+              @case ('OVER_LIMIT') {
+                <span class="credit-chip over">
+                  <mat-icon>error</mat-icon>
+                  Over limit · {{ formatUtilization(cs.utilization) }}
+                </span>
+              }
+              @case ('NO_LIMIT') {
+                <!-- Render only when the customer's stored limit is null
+                     too — if the limit is set but utilisation is null,
+                     something else is up. -->
+                @if (!c.creditLimit) {
+                  <span class="credit-chip none">no limit set</span>
+                }
+              }
+            }
+          }
+        </dd>
+
+        <!-- Termination date is only shown for soft-deleted customers. -->
+        @if (c.active === false && c.terminatedDate) {
+          <dt><mat-icon>event_busy</mat-icon> Terminated on</dt>
+          <dd>{{ c.terminatedDate }}</dd>
+        }
+      </dl>
+    </div>
+
+    <!--
+      Audit footer. Renders only if the API returned audit fields
+      (older clients calling pre-V6 servers wouldn't see them). The
+      'medium' date pipe gives "May 6, 2026, 2:09 PM"-style output.
+
+      Suppress the "Last updated" line when updated == created — on a
+      brand-new record they're equal and showing both lines is noisy.
+    -->
+    @if (c.createdAt || c.updatedAt) {
+      <div class="audit-footer">
+        @if (c.createdAt) {
+          <span>Created by <strong>{{ c.createdBy ?? 'unknown' }}</strong>
+          on {{ c.createdAt | date:'medium' }}</span>
+        }
+        @if (c.updatedAt && c.updatedAt !== c.createdAt) {
+          <span> · Last updated by <strong>{{ c.updatedBy ?? 'unknown' }}</strong>
+          on {{ c.updatedAt | date:'medium' }}</span>
+        }
+      </div>
+    }
+  </mat-card>
 }

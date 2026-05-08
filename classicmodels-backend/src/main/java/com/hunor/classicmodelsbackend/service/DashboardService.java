@@ -35,9 +35,17 @@ public class DashboardService {
     private static final int TOP_CUSTOMERS_LIMIT = 10;
 
     private final DashboardRepository repo;
+    /**
+     * Source of the credit-alert counts shown on the dashboard's
+     * "Credit alerts" KPI tile (C13). The dashboard composes the
+     * snapshot; the credit service owns the calculation.
+     */
+    private final CustomerCreditService creditService;
 
-    public DashboardService(DashboardRepository repo) {
+    public DashboardService(DashboardRepository repo,
+                            CustomerCreditService creditService) {
         this.repo = repo;
+        this.creditService = creditService;
     }
 
     public SalesDashboardDTO getSalesDashboard() {
@@ -51,15 +59,24 @@ public class DashboardService {
                 ? BigDecimal.ZERO
                 : totalRevenue.divide(BigDecimal.valueOf(totalOrders), 2, RoundingMode.HALF_UP);
 
+        // Credit alert counts (C13). Pulled from CustomerCreditService
+        // so the same numbers appear here and on the per-customer chip
+        // and the alerts list page — single source of truth.
+        var alertCounts = creditService.countAlerts();
+
         return new SalesDashboardDTO(
                 totalRevenue,
                 totalOrders,
                 avg,
                 repo.activeCustomers(),
+                new SalesDashboardDTO.CreditAlerts(
+                        alertCounts.overLimitCount(),
+                        alertCounts.nearLimitCount()),
                 repo.revenueByMonth(),
                 repo.revenueByProductLine(),
                 repo.topCustomers(TOP_CUSTOMERS_LIMIT),
-                repo.ordersByStatus()
+                repo.ordersByStatus(),
+                repo.revenueByCountry()
         );
     }
 }

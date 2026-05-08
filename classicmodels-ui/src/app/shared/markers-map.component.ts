@@ -27,6 +27,16 @@ export interface MapPoint {
    * data from outside their own code.
    */
   popupHtml?: string;
+  /**
+   * Optional CSS class to apply to a {@code L.divIcon} for this point.
+   * When present, the marker is rendered as a coloured div instead of
+   * the default Leaflet pin — the parent's CSS controls the appearance.
+   * Used by C10 to colour-code customers by sales-rep assignment status.
+   *
+   * <p>When absent, the default Leaflet blue pin is used (existing
+   * behaviour from F3).</p>
+   */
+  iconClass?: string;
 }
 
 /**
@@ -127,7 +137,10 @@ export class MarkersMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     if (this.points.length === 0) return;
 
-    const icon = L.icon({
+    // Default icon — used when a point doesn't specify its own iconClass.
+    // Same Leaflet pin assets as the mini-map; CDN-hosted to sidestep
+    // bundler quirks with the default marker images.
+    const defaultIcon = L.icon({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
       shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -138,6 +151,21 @@ export class MarkersMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     });
 
     for (const p of this.points) {
+      // When the point declares an iconClass, render a divIcon — Leaflet
+      // wraps an empty <div> with the supplied class name and the
+      // parent component's CSS does the actual styling. This decouples
+      // marker colour decisions from the map component itself.
+      const icon = p.iconClass
+        ? L.divIcon({
+            className: p.iconClass,
+            iconSize: [16, 16],
+            // Anchor the centre of the icon at the lat/lng. Default
+            // leaflet pin anchors at the bottom-tip; circular div icons
+            // look more natural anchored centrally.
+            iconAnchor: [8, 8],
+            popupAnchor: [0, -8],
+          })
+        : defaultIcon;
       const marker = L.marker([p.lat, p.lng], { icon });
       if (p.popupHtml) marker.bindPopup(p.popupHtml);
       marker.addTo(this.markersGroup);

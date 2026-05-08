@@ -15,10 +15,23 @@ export interface SalesDashboard {
   averageOrderValue: number;
   activeCustomers: number;
 
+  /**
+   * Counts of customers near or over their credit limit (C13).
+   * Drives the "Credit alerts" KPI tile, which links to
+   * /customers/credit-alerts.
+   */
+  creditAlerts: { overLimitCount: number; nearLimitCount: number };
+
   revenueByMonth:        { month: string; revenue: number }[];
   revenueByProductLine:  { productLine: string; revenue: number }[];
   topCustomers:          { customerNumber: number; customerName: string; revenue: number }[];
   ordersByStatus:        Record<string, number>;
+  /**
+   * Revenue + customer count grouped by country (C14). Drives the
+   * "Revenue by country" chart and supports drill-back into the
+   * customer list filtered to one country.
+   */
+  revenueByCountry:      { country: string; revenue: number; customerCount: number }[];
 }
 
 /** Service-layer wrapper around GET /dashboard/sales. */

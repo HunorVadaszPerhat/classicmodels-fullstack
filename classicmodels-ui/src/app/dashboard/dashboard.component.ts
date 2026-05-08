@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -93,6 +93,7 @@ Chart.register(
   selector: 'app-dashboard',
   imports: [
     CommonModule,
+    RouterLink,
     MatCardModule,
     MatProgressSpinnerModule,
     MatIconModule,
@@ -142,6 +143,29 @@ Chart.register(
       margin-top: 0.4rem;
       color: #1a237e;
     }
+    .kpi-sub {
+      font-size: 0.8rem;
+      color: rgba(0, 0, 0, 0.55);
+      margin-top: 0.25rem;
+    }
+
+    /* Credit-alerts tile (C13). Wrapping <a> kills the default link
+       underline + colour so the card looks the same; the cursor still
+       changes to pointer. */
+    .kpi-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+    .kpi-link.muted .kpi-card {
+      opacity: 0.85;
+    }
+    .kpi-alerts.has-alerts {
+      border-left: 4px solid #e65100;
+    }
+    .kpi-alerts.has-alerts .kpi-value {
+      color: #e65100;
+    }
 
     /* Two-up grid for the charts; collapses to 1-up on narrow screens. */
     .charts-grid {
@@ -178,6 +202,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('productLineCanvas')      productLineRef!:      ElementRef<HTMLCanvasElement>;
   @ViewChild('topCustomersCanvas')     topCustomersRef!:     ElementRef<HTMLCanvasElement>;
   @ViewChild('ordersByStatusCanvas')   ordersByStatusRef!:   ElementRef<HTMLCanvasElement>;
+  @ViewChild('revenueByCountryCanvas') revenueByCountryRef!: ElementRef<HTMLCanvasElement>;
 
   // ---- Chart.js instances ---------------------------------------------
   // Stored so we can call .update(...) when fresh data arrives instead
@@ -187,6 +212,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private productLineChart?:      Chart;
   private topCustomersChart?:     Chart;
   private ordersByStatusChart?:   Chart;
+  private revenueByCountryChart?: Chart;
 
   // ---- UI state -------------------------------------------------------
   data    = signal<SalesDashboard | undefined>(undefined);
@@ -218,6 +244,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.productLineChart?.destroy();
     this.topCustomersChart?.destroy();
     this.ordersByStatusChart?.destroy();
+    this.revenueByCountryChart?.destroy();
   }
 
   refresh(): void {
@@ -276,6 +303,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.renderProductLine(d);
     this.renderTopCustomers(d);
     this.renderOrdersByStatus(d);
+    this.renderRevenueByCountry(d);
   }
 
   /**
@@ -479,6 +507,83 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.ordersByStatusChart.update();
     } else {
       this.ordersByStatusChart = new Chart(this.ordersByStatusRef.nativeElement, config);
+    }
+  }
+
+  /**
+   * Horizontal bar chart of revenue by country (C14). Sorted highest-
+   * first by the backend; we cap to top 10 client-side because the
+   * dataset has ~28 countries and a 28-row chart is unreadable on
+   * the dashboard tile.
+   *
+   * <p>Click a bar to drill into the customer list filtered by that
+   * country — same drill-down pattern as the top-customers chart.
+   * The list page picks up {@code ?country=X} from the URL and
+   * applies the filter server-side.</p>
+   */
+  private renderRevenueByCountry(d: SalesDashboard): void {
+    if (!this.revenueByCountryRef) return;
+
+    const TOP_N = 10;
+    const top = d.revenueByCountry.slice(0, TOP_N);
+    const labels = top.map(c => c.country);
+    const values = top.map(c => c.revenue);
+    const counts = top.map(c => c.customerCount);
+
+    const config: ChartConfiguration = {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Revenue',
+          data: values,
+          backgroundColor: this.palette[2],
+          borderRadius: 3,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        // Same indexAxis: 'y' trick the top-customers chart uses —
+        // long country names along the y-axis read better than rotated
+        // -45° on the x-axis.
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              // Show "$1.2M · 12 customers" so the bar's economic
+              // weight and the underlying account count are both
+              // visible at a glance.
+              label: ctx => `  ${this.formatMoney(ctx.parsed.x)} · ${counts[ctx.dataIndex]} customers`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { callback: v => this.formatMoney(v as number) },
+          },
+        },
+        // Click a bar → navigate to the customer list filtered to
+        // this country. Uses queryParams so the URL is shareable
+        // ("here's everyone in France") without requiring a sub-route.
+        onClick: (_event, elements) => {
+          if (!elements.length) return;
+          const idx = elements[0].index;
+          this.router.navigate(['/customers'], {
+            queryParams: { country: labels[idx] },
+          });
+        },
+      },
+    };
+
+    if (this.revenueByCountryChart) {
+      this.revenueByCountryChart.data.labels = labels;
+      this.revenueByCountryChart.data.datasets[0].data = values;
+      this.revenueByCountryChart.update();
+    } else {
+      this.revenueByCountryChart = new Chart(this.revenueByCountryRef.nativeElement, config);
     }
   }
 }

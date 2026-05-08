@@ -41,6 +41,7 @@ public enum DeleteStrategy {
      */
     CASCADE,
 
+    REASSIGN_DELETE,
     /**
      * Hard delete the employee AND every descendant row in the entire
      * dependency tree underneath their customers — orders, order details,

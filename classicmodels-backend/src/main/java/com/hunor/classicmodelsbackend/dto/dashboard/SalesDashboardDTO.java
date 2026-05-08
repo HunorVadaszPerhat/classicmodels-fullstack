@@ -32,12 +32,23 @@ public record SalesDashboardDTO(
         BigDecimal averageOrderValue,
         long activeCustomers,
 
+        // ---- Credit alerts (C13) -------------------------------------
+        CreditAlerts creditAlerts,
+
         // ---- Chart datasets ------------------------------------------
         List<MonthlyRevenue>     revenueByMonth,
         List<ProductLineRevenue> revenueByProductLine,
         List<CustomerRevenue>    topCustomers,
-        Map<String, Long>        ordersByStatus
+        Map<String, Long>        ordersByStatus,
+        List<CountryRevenue>     revenueByCountry
 ) {
+
+    /**
+     * Counts of customers near or over their credit limit (C13).
+     * Drives the "Credit alerts" KPI tile on the dashboard, which
+     * links to the full alerts list at /customers/credit-alerts.
+     */
+    public record CreditAlerts(long overLimitCount, long nearLimitCount) {}
 
     /**
      * One bucket of the month-over-month revenue series. {@code month}
@@ -50,4 +61,12 @@ public record SalesDashboardDTO(
 
     /** One row of the top-N customer ranking. */
     public record CustomerRevenue(int customerNumber, String customerName, BigDecimal revenue) {}
+
+    /**
+     * One country bucket for the C14 "revenue by country" chart.
+     * Carries both revenue (the bar height) and customerCount
+     * (the tooltip / drill-into-list helper) so the chart can show
+     * "France: $1.2M / 12 customers" without a second query.
+     */
+    public record CountryRevenue(String country, BigDecimal revenue, long customerCount) {}
 }
